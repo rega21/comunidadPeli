@@ -54,3 +54,6 @@ Feel free to submit issues or pull requests for improvements or bug fixes.
 ## License
 
 This project is licensed under the MIT License.
+
+
+> ⚠️ This project uses a public TMDB API Key for educational and demonstration purposes only. If you plan to use it in production, please create your own key and protect it appropriately.
