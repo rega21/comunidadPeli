@@ -1,0 +1,50 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+#movies > li {
+  background: #fff;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+img {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 1rem;
+}
+/* Color al pasar el mouse (hover) */
+.dropdown-item:hover {
+  background-color: #dee2e6 !important;
+  color: #212529;
+}
+
+/* Color cuando está seleccionada */
+.dropdown-item.active-genre,
+.dropdown-item.active-genre:hover {
+  background-color: #bfc4c9 !important;
+  color: #212529;
+}
+
+
+
+#trailer-container {
+  margin-top: 2rem;
+}
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+
