@@ -10,6 +10,7 @@ const searchInput = document.getElementById('searchInput');
 
 // Función para mostrar películas
 function renderMovies(movies) {
+  window.ultimaListaPeliculas = movies; // <-- Agrega esto
   moviesList.innerHTML = '';
   if (!movies || movies.length === 0) {
     moviesList.innerHTML = '<li class="col-12">No se encontraron películas.</li>';
@@ -154,7 +155,7 @@ setupNavbar(
         searchInput.focus();
         break;
       case 'Favoritos':
-        moviesList.innerHTML = '<li class="col-12">Funcionalidad de favoritos próximamente.</li>';
+        mostrarFavoritos(); // Esta función debe estar implementada como te mostré antes
         break;
       case '¿Qué ver este finde?':
         fetchTrendingMovies();
@@ -224,7 +225,7 @@ function showMovieModal(movie) {
     });
 
   // Mostrar el modal (Bootstrap 5)
-  const modal = new bootstrap.Modal(document.getElementById('movieModal'));
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('movieModal'));
   modal.show();
 }
 
@@ -232,3 +233,93 @@ function showMovieModal(movie) {
 document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
   new bootstrap.Tooltip(el);
 });
+
+moviesList.addEventListener('click', function(e) {
+  if (e.target.closest('.watchlist-btn')) return;
+
+  const card = e.target.closest('.movie-card');
+  if (card) {
+    const movieId = card.querySelector('.watchlist-btn').getAttribute('data-movie-id');
+    const movie = window.ultimaListaPeliculas.find(m => m.id == movieId);
+    if (movie) {
+      showMovieModal(movie, API_KEY, BASE_URL);
+    }
+  }
+});
+
+// Evento global para manejar clicks en el botón de favoritos (watchlist) SOLO en películas
+document.addEventListener('click', async function(e) {
+  const watchBtn = e.target.closest('.watchlist-btn');
+  if (watchBtn) {
+    e.stopPropagation();
+    // Solo aplica a películas (cards con .movie-card)
+    const card = watchBtn.closest('.movie-card');
+    if (!card) return;
+
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
+    if (!usuario) {
+      alert('Debes iniciar sesión para agregar a tu Watchlist.');
+      return;
+    }
+    const movieId = watchBtn.getAttribute('data-movie-id');
+    const icon = watchBtn.querySelector('i');
+
+    // Consultar si ya existe el favorito en MockAPI
+    const res = await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos?mail=${usuario.mail}&movieId=${movieId}`);
+    const favoritos = await res.json();
+
+    if (favoritos.length > 0 && favoritos[0].id) {
+      // Quitar de favoritos (DELETE)
+      await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos/${favoritos[0].id}`, { method: 'DELETE' });
+      icon.className = 'bi bi-bookmark';
+    } else {
+      // Agregar a favoritos (POST)
+      await fetch('https://685abb749f6ef9611157981f.mockapi.io/favoritos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mail: usuario.mail, movieId })
+      });
+      icon.className = 'bi bi-bookmark-fill text-warning';
+    }
+    return;
+  }
+
+  // Modal detalle SOLO para películas
+  const card = e.target.closest('.movie-card');
+  if (card) {
+    const movieId = card.querySelector('.watchlist-btn').getAttribute('data-movie-id');
+    const movie = window.ultimaListaPeliculas.find(m => m.id == movieId);
+    if (movie) {
+      showMovieModal(movie, API_KEY, BASE_URL);
+    }
+  }
+});
+
+async function mostrarFavoritos() {
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  if (!usuario) {
+    moviesList.innerHTML = '<li class="col-12">Debes iniciar sesión para ver tus favoritos.</li>';
+    return;
+  }
+  moviesList.innerHTML = '<li class="col-12">Cargando favoritos...</li>';
+  const res = await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos?mail=${usuario.mail}`);
+  const favoritos = await res.json();
+  if (!favoritos.length) {
+    moviesList.innerHTML = '<li class="col-12">No tienes películas en tu Watchlist.</li>';
+    return;
+  }
+  const movies = await Promise.all(
+    favoritos.map(fav =>
+      fetch(`${BASE_URL}/movie/${fav.movieId}?api_key=${API_KEY}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    )
+  );
+  const validMovies = movies.filter(Boolean);
+  window.ultimaListaPeliculas = validMovies;
+  moviesList.innerHTML = '';
+  validMovies.forEach(movie => {
+    const card = createMovieCard(movie);
+    moviesList.appendChild(card);
+  });
+}

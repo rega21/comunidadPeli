@@ -1,6 +1,6 @@
 // filepath: c:\Users\user\Desktop\Programacion\Js\movies-app\js-movies-app\js\Menu.js
 import { API_KEY, BASE_URL } from './config.js';
-import { createMovieCard, showMovieModal } from './components.js';
+import { createMovieCard, showMovieModal, createActorCard } from './components.js';
 import { renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
 
 const moviesList = document.getElementById('movies');
@@ -8,6 +8,10 @@ const actorSearchForm = document.getElementById('actorSearchForm');
 const actorSearchInput = document.getElementById('actorSearchInput');
 const searchForm = document.getElementById('searchForm'); // El de películas
 const exploreResultMsg = document.getElementById('exploreResultMsg');
+
+// Guarda la última lista de películas y actores mostrados
+let ultimaListaPeliculas = [];
+let ultimaListaActores = [];
 
 // Mostrar actores populares
 export function mostrarActores() {
@@ -19,21 +23,14 @@ export function mostrarActores() {
   fetch(`${BASE_URL}/person/popular?api_key=${API_KEY}&page=${paginaActual}`)
     .then(response => response.json())
     .then(data => {
-      moviesList.innerHTML = data.results.slice(0, 8).map(person => `
-        <li class="col-12 col-md-6 col-lg-4 mb-3">
-          <div class="card h-100">
-            <img src="${person.profile_path ? `https://image.tmdb.org/t/p/w300${person.profile_path}` : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${person.name}">
-            <div class="card-body">
-              <h5 class="card-title">${person.name}</h5>
-              <p class="card-text">Conocido por: ${person.known_for_department}</p>
-              <button class="btn btn-outline-primary btn-sm detalle-actor-btn" data-actor-id="${person.id}">Ver detalle</button>
-            </div>
-          </div>
-        </li>
-      `).join('');
+      moviesList.innerHTML = '';
+      ultimaListaActores = data.results;
+      data.results.slice(0, 8).forEach(actor => {
+        const card = createActorCard(actor);
+        moviesList.appendChild(card);
+      });
       setTotalPaginas(Math.min(data.total_pages, 10));
       renderPaginacion();
-      agregarListenersDetalleActor();
     });
 }
 
@@ -51,34 +48,17 @@ actorSearchForm.addEventListener('submit', function(e) {
         actorSearchInput.value = '';
         return;
       }
-      moviesList.innerHTML = data.results.slice(0, 8).map(person => `
-        <li class="col-12 col-md-6 col-lg-4 mb-3">
-          <div class="card h-100">
-            <img src="${person.profile_path ? `https://image.tmdb.org/t/p/w300${person.profile_path}` : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${person.name}">
-            <div class="card-body">
-              <h5 class="card-title">${person.name}</h5>
-              <p class="card-text">Conocido por: ${person.known_for_department}</p>
-              <button class="btn btn-outline-primary btn-sm detalle-actor-btn" data-actor-id="${person.id}">Ver detalle</button>
-            </div>
-          </div>
-        </li>
-      `).join('');
-      agregarListenersDetalleActor();
+      moviesList.innerHTML = '';
+      ultimaListaActores = data.results;
+      data.results.slice(0, 8).forEach(actor => {
+        const card = createActorCard(actor);
+        moviesList.appendChild(card);
+      });
       actorSearchInput.value = '';
     });
 });
 
-function agregarListenersDetalleActor() {
-  document.querySelectorAll('.detalle-actor-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const actorId = this.getAttribute('data-actor-id');
-      mostrarDetalleActor(actorId);
-    });
-  });
-}
-
 function mostrarDetalleActor(actorId) {
-  // Cargar datos del actor
   Promise.all([
     fetch(`${BASE_URL}/person/${actorId}?api_key=${API_KEY}&language=es-ES`).then(res => res.json()),
     fetch(`${BASE_URL}/person/${actorId}/movie_credits?api_key=${API_KEY}&language=es-ES`).then(res => res.json())
@@ -97,7 +77,6 @@ function mostrarDetalleActor(actorId) {
           <img src="${actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profile_path}` : 'https://via.placeholder.com/300x450?text=No+Image'}" class="img-fluid rounded shadow mt-3 mb-3" alt="${actor.name}">
         </div>
         <div class="col-md-8">
-          
           <p><strong>Nacimiento:</strong> ${actor.birthday ? actor.birthday : 'No disponible'}${edad}</p>
           <p><strong>Lugar:</strong> ${actor.place_of_birth || 'No disponible'}</p>
           <p><strong>Biografía:</strong> ${actor.biography || 'No disponible.'}</p>
@@ -165,6 +144,7 @@ export function mostrarTendencias() {
     .then(data => {
       moviesList.innerHTML = '';
       setTotalPaginas(Math.min(data.total_pages, 10));
+      ultimaListaPeliculas = data.results; // Guarda la lista actual
       data.results.slice(0, 8).forEach(movie => {
         const card = createMovieCard(movie);
         moviesList.appendChild(card);
@@ -188,44 +168,15 @@ export function mostrarMasValoradas() {
     .then(data => {
       moviesList.innerHTML = '';
       setTotalPaginas(Math.min(data.total_pages, 10));
-      const ordenadas = data.results
+      ultimaListaPeliculas = data.results;
+      data.results
         .sort((a, b) => b.vote_average - a.vote_average)
-        .slice(0, 8);
-      ordenadas.forEach(movie => {
-        const card = document.createElement('li');
-        card.className = 'col-12 col-md-6 col-lg-4 mb-3';
-        card.innerHTML = `
-          <div class="card h-100">
-            <img src="${movie.poster_path
-              ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
-              : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${movie.title}">
-            <div class="card-body">
-              <h5 class="card-title">${movie.title}</h5>
-              <p class="card-text mb-1"><small class="text-muted">Año: ${movie.release_date ? movie.release_date.slice(0, 4) : 'N/A'}</small></p>
-              <p class="card-text mb-2">
-                <span class="text-warning" style="font-size:1.2em">&#9733;</span>
-                <span style="font-size:1.2em;font-weight:bold">${movie.vote_average}</span>
-                <span class="text-muted">(${movie.vote_count} votos)</span>
-              </p>
-              <button class="btn btn-outline-primary btn-sm detalle-btn" data-movie-id="${movie.id}">DETALLE</button>
-            </div>
-          </div>
-        `;
-        moviesList.appendChild(card);
-      });
-      renderPaginacion();
-
-      // Agrega los listeners a los botones DETALLE
-      moviesList.querySelectorAll('.detalle-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-          const movieId = this.getAttribute('data-movie-id');
-          // Busca la película en el array actual (puedes usar data.results o el array que tengas)
-          const movie = data.results.find(m => m.id == movieId);
-          if (movie) {
-            showMovieModal(movie, API_KEY, BASE_URL);
-          }
+        .slice(0, 8)
+        .forEach(movie => {
+          const card = createMovieCard(movie);
+          moviesList.appendChild(card);
         });
-      });
+      renderPaginacion();
     })
     .catch(() => {
       moviesList.innerHTML = '<li class="col-12">Error al cargar películas mejor valoradas.</li>';
@@ -266,4 +217,29 @@ if (menuDropdownMenu) {
     }
   });
 }
+
+// Listener global para abrir el modal al hacer click en la card (excepto en el botón watchlist)
+moviesList.addEventListener('click', function(e) {
+  if (e.target.closest('.watchlist-btn')) return; // No abrir modal si es el botón watchlist
+
+  // Películas
+  const card = e.target.closest('.movie-card');
+  if (card) {
+    const movieId = card.querySelector('.watchlist-btn').getAttribute('data-movie-id');
+    const movie = ultimaListaPeliculas.find(m => m.id == movieId);
+    if (movie) {
+      showMovieModal(movie, API_KEY, BASE_URL);
+      return;
+    }
+  }
+
+  // Actores
+  const actorCard = e.target.closest('.actor-card');
+  if (actorCard) {
+    const actorId = actorCard.getAttribute('data-actor-id');
+    if (actorId) {
+      mostrarDetalleActor(actorId);
+    }
+  }
+});
 

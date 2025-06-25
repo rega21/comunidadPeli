@@ -5,27 +5,35 @@
  */
 export function createMovieCard(movie) {
   const li = document.createElement('li');
-  li.className = 'col-12 col-md-6 col-lg-4 mb-3';
-
-  // Extraer año de la fecha
-  const year = movie.release_date ? movie.release_date.slice(0, 4) : 'N/A';
+  li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3';
 
   li.innerHTML = `
-    <div class="card h-100">
+    <div class="card h-100 position-relative movie-card" style="cursor:pointer;">
       <img src="${movie.poster_path
         ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
         : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${movie.title}">
+      <button class="btn btn-light btn-sm rounded-circle position-absolute top-0 start-0 m-2 watchlist-btn" data-movie-id="${movie.id}" title="Agregar a Watchlist" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
+        <i class="bi bi-plus-lg fs-5"></i>
+      </button>
       <div class="card-body">
-        <h5 class="card-title">${movie.title}</h5>
-        <p class="card-text mb-1"><small class="text-muted">Año: ${year}</small></p>
+        <h5 class="card-title mb-1">${movie.title}</h5>
         <p class="card-text mb-2">
           <span class="text-warning">&#9733;</span>
           <span>${movie.vote_average}</span>
         </p>
-        <button class="btn btn-outline-primary btn-sm detalle-btn" data-movie-id="${movie.id}">DETALLE</button>
       </div>
     </div>
   `;
+
+  // Verificar si la película está en la lista de favoritos del usuario
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  if (usuario) {
+    const favoritos = JSON.parse(localStorage.getItem(`favoritos_${usuario.mail}`)) || [];
+    if (favoritos.includes(String(movie.id))) {
+      li.querySelector('.watchlist-btn i').className = 'bi bi-bookmark-fill text-warning';
+    }
+  }
+
   return li;
 }
 
@@ -102,4 +110,27 @@ export function showMovieModal(movie, API_KEY, BASE_URL) {
   // Mostrar el modal (Bootstrap 5)
   const modal = new bootstrap.Modal(document.getElementById('movieModal'));
   modal.show();
+}
+
+/**
+ * Genera el HTML de una tarjeta de actor.
+ * @param {Object} actor - Objeto actor de la API.
+ * @returns {HTMLElement} - Elemento <li> con la tarjeta.
+ */
+export function createActorCard(actor) {
+  const li = document.createElement('li');
+  li.className = 'col-12 col-md-6 col-lg-4 mb-3';
+
+  li.innerHTML = `
+    <div class="card h-100 position-relative actor-card" data-actor-id="${actor.id}" style="cursor:pointer;">
+      <img src="${actor.profile_path
+        ? `https://image.tmdb.org/t/p/w300${actor.profile_path}`
+        : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${actor.name}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">${actor.name}</h5>
+        <p class="card-text">Conocido por: ${actor.known_for_department}</p>
+      </div>
+    </div>
+  `;
+  return li;
 }
