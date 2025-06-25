@@ -13,9 +13,10 @@ export function setPaginaActual(n) {
 }
 
 export function renderPaginacion() {
-  const paginacion = document.getElementById('paginacion');
-  if (!paginacion) return;
-  paginacion.innerHTML = `
+  const pagination = document.getElementById('pagination');
+  if (!pagination) return;
+  pagination.classList.remove('d-none');
+  pagination.innerHTML = `
     <nav>
       <ul class="pagination justify-content-center">
         <li class="page-item${paginaActual === 1 ? ' disabled' : ''}">

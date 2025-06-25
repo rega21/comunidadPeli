@@ -296,6 +296,10 @@ document.addEventListener('click', async function(e) {
 });
 
 async function mostrarFavoritos() {
+  // Oculta la paginación en la sección Favoritos
+  const pagination = document.getElementById('pagination');
+  if (pagination) pagination.classList.add('d-none');
+
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   if (!usuario) {
     moviesList.innerHTML = '<li class="col-12">Debes iniciar sesión para ver tus favoritos.</li>';

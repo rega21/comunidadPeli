@@ -6,17 +6,17 @@ export function loginUsuario(mail, password) {
       const msgDiv = document.getElementById('loginMsg');
       if (user) {
         msgDiv.innerHTML = `
-          <div class="alert alert-success" role="alert">
-            ¡Login exitoso! Bienvenido, ${user.name || user.mail}.
+          <div class="alert alert-success text-center" role="alert">
+            🎬 ¡Login exitoso! Bienvenido, ${user.name || user.mail}.
           </div>
         `;
         localStorage.setItem('usuario', JSON.stringify(user));
         setTimeout(() => {
-          window.location.href = '../../index.html'; // Ajusta la ruta si es necesario
-        }, 1500); // Espera 1.5 segundos para que el usuario vea el mensaje
+          window.location.href = '../../index.html';
+        }, 1500);
       } else {
         msgDiv.innerHTML = `
-          <div class="alert alert-danger" role="alert">
+          <div class="alert alert-danger text-center" role="alert">
             Usuario o contraseña incorrectos.
           </div>
         `;
@@ -25,10 +25,20 @@ export function loginUsuario(mail, password) {
     .catch(() => {
       const msgDiv = document.getElementById('loginMsg');
       msgDiv.innerHTML = `
-        <div class="alert alert-danger" role="alert">
+        <div class="alert alert-danger text-center" role="alert">
           Error al iniciar sesión. Intenta nuevamente.
         </div>
       `;
     });
 }
 
+// Inicialización del formulario de login
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const mail = document.getElementById('loginMail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    loginUsuario(mail, password);
+  });
+});

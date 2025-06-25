@@ -8,9 +8,12 @@ export function registrarUsuario(name, mail, password) {
     .then(user => {
       document.getElementById('signupMsg').innerHTML = `
         <div class="alert alert-success" role="alert">
-          ¡Registro exitoso! Ahora puedes <a href="login.html" class="alert-link">iniciar sesión</a>.
+          ¡Registro exitoso! Redirigiendo al <a href="login.html" class="alert-link">login</a>...
         </div>
       `;
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 1000); // 1 segundo de espera
     })
     .catch(() => {
       document.getElementById('signupMsg').innerHTML = `

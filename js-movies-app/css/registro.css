@@ -1,0 +1,32 @@
+/* filepath: js-movies-app/css/auth.css */
+body {
+  background: url('../img/movieLogin.png') no-repeat center center fixed;
+  background-size: cover;
+}
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.35);
+  backdrop-filter: blur(3px);
+  z-index: 0;
+}
+.login-card {
+  position: relative;
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.position-relative i {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%); 
+  cursor: pointer;
+  color: #555;
+}
