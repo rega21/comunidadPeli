@@ -67,7 +67,7 @@ function fetchInicioMovies() {
   */
 
 
-import { renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
+import { renderpagination, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
 
 let generoActual = null;
 
@@ -80,7 +80,7 @@ function fetchInicioMovies() {
     .then(data => {
       renderMovies(data.results);
       setTotalPaginas(Math.min(data.total_pages, 10)); // Limita a 10 páginas si quieres
-      renderPaginacion();
+      renderpagination();
     })
     .catch(() => {
       moviesList.innerHTML = '<li class="col-12">Error al cargar películas de inicio.</li>';
@@ -118,7 +118,7 @@ function fetchMoviesByGenre() {
     .then(data => {
       renderMovies(data.results);
       setTotalPaginas(Math.min(data.total_pages, 10));
-      renderPaginacion();
+      renderpagination();
     })
     .catch(() => {
       moviesList.innerHTML = '<li class="col-12">Error al filtrar por género.</li>';
