@@ -1,6 +1,7 @@
 import { createMovieCard, createMovieModalContent } from './components.js';
 import { setupNavbar } from './navbar.js';
 import { setPaginaActual } from './pagination.js';
+import { setupAutocomplete } from './autocomplete.js';
 
 const API_KEY = '12be8542502608cdcb8f5b86efa3ee46'; // Reemplaza con tu API key real
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -327,3 +328,19 @@ async function mostrarFavoritos() {
     moviesList.appendChild(card);
   });
 }
+
+// Para películas
+setupAutocomplete(
+  document.getElementById('searchInput'),
+  query => `${BASE_URL}/search/movie?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`,
+  movie => movie.title,
+  movie => movie.poster_path ? `https://image.tmdb.org/t/p/w45${movie.poster_path}` : ''
+);
+
+// Para actores
+setupAutocomplete(
+  document.getElementById('actorSearchInput'),
+  query => `${BASE_URL}/search/person?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`,
+  actor => actor.name,
+  actor => actor.profile_path ? `https://image.tmdb.org/t/p/w45${actor.profile_path}` : ''
+);

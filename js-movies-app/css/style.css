@@ -46,5 +46,10 @@ img {
   clear: both;
 }
 
+.list-group.position-absolute {
+  top: 100%;
+  left: 0;
+}
+
 
 
