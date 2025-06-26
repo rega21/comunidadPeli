@@ -258,11 +258,24 @@ actorSearchInput.addEventListener('input', function() {
     .then(res => res.json())
     .then(data => {
       if (!data.results.length) return;
-      data.results.slice(0, 5).forEach(actor => {
+
+      // Filtrar: solo actores con imagen y sin duplicados por nombre
+      const nombresMostrados = new Set();
+      const sugerencias = data.results.filter(actor =>
+        actor.profile_path && // Solo con imagen
+        actor.known_for_department && // Solo si tiene departamento conocido
+        !nombresMostrados.has(actor.name) && // Sin duplicados por nombre
+        nombresMostrados.add(actor.name)
+      );
+
+      sugerencias.slice(0, 5).forEach(actor => {
         const item = document.createElement('li');
-        item.className = 'list-group-item list-group-item-action';
-        item.textContent = actor.name;
-        item.addEventListener('mousedown', () => { // <-- Cambia 'click' por 'mousedown'
+        item.className = 'list-group-item list-group-item-action d-flex align-items-center';
+        item.innerHTML = `
+          <img src="https://image.tmdb.org/t/p/w45${actor.profile_path}" alt="${actor.name}" class="rounded me-2" style="width:32px;height:48px;object-fit:cover;">
+          <span>${actor.name}</span>
+        `;
+        item.addEventListener('mousedown', () => {
           actorSearchInput.value = actor.name;
           autocompleteList.innerHTML = '';
         });
