@@ -2,6 +2,7 @@ import { createMovieCard, createMovieModalContent } from './components.js';
 import { setupNavbar } from './navbar.js';
 import { setPaginaActual } from './pagination.js';
 import { setupAutocomplete } from './autocomplete.js';
+import { renderImageCarousel, renderVideosCarousel } from './carousel.js';
 
 const API_KEY = '12be8542502608cdcb8f5b86efa3ee46'; // Reemplaza con tu API key real
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -336,40 +337,15 @@ fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&languag
   .then(res => res.json())
   .then(data => {
     const topMovies = data.results.slice(0, 5); // Muestra 5 estrenos
-    let carouselInner = topMovies.map((movie, idx) => `
-      <div class="carousel-item${idx === 0 ? ' active' : ''}">
-        <img src="https://image.tmdb.org/t/p/w780${movie.backdrop_path || '/path/to/horizontal-placeholder.jpg'}"
-             class="d-block w-100 carousel-img"
-             alt="${movie.title}"
-             data-movie-id="${movie.id}">
-      </div>
-    `).join('');
+    renderImageCarousel(inicioCarouselContainer, topMovies);
+    // ...eventos para modal...
+  });
 
-    inicioCarouselContainer.innerHTML = `
-      <div id="inicioCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-          ${carouselInner}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#inicioCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#inicioCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
-      </div>
-    `;
-
-    // Evento para abrir el modal al hacer clic en la imagen del carousel
-    inicioCarouselContainer.addEventListener('click', function(e) {
-      const img = e.target.closest('.carousel-img');
-      if (img && img.dataset.movieId) {
-        const movieId = img.dataset.movieId;
-        const movie = topMovies.find(m => m.id == movieId);
-        if (movie) {
-          showMovieModal(movie);
-        }
-      }
-    });
+// Para el carousel de videos
+fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=es-ES&page=1`)
+  .then(res => res.json())
+  .then(async data => {
+    await renderVideosCarousel(videosCarouselContainer, data.results.slice(0, 5), API_KEY);
   });
 
 // Para películas
@@ -387,3 +363,25 @@ setupAutocomplete(
   actor => actor.name,
   actor => actor.profile_path ? `https://image.tmdb.org/t/p/w45${actor.profile_path}` : ''
 );
+
+
+/*
+document.addEventListener('DOMContentLoaded', () => {
+  const videosCarousel = document.getElementById('videosCarousel');
+  if (videosCarousel) {
+    videosCarousel.addEventListener('slid.bs.carousel', function () {
+      // Encuentra el slide activo
+      const activeItem = videosCarousel.querySelector('.carousel-item.active');
+      // Pausa todos los iframes menos el del slide activo
+      videosCarousel.querySelectorAll('.carousel-item').forEach(item => {
+        const iframe = item.querySelector('iframe');
+        if (iframe && item !== activeItem) {
+          const src = iframe.src;
+          iframe.src = src; // Esto pausa el video
+        }
+      });
+    });
+  }
+});
+
+*/
