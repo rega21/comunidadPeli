@@ -25,7 +25,7 @@ export function mostrarActores() {
     .then(data => {
       moviesList.innerHTML = '';
       ultimaListaActores = data.results;
-      data.results.slice(0, 8).forEach(actor => {
+      data.results.slice(0, 12).forEach(actor => {
         const card = createActorCard(actor);
         moviesList.appendChild(card);
       });
@@ -145,7 +145,7 @@ export function mostrarTendencias() {
       moviesList.innerHTML = '';
       setTotalPaginas(Math.min(data.total_pages, 10));
       ultimaListaPeliculas = data.results; // Guarda la lista actual
-      data.results.slice(0, 8).forEach(movie => {
+      data.results.slice(0, 12).forEach(movie => {
         const card = createMovieCard(movie);
         moviesList.appendChild(card);
       });
@@ -171,9 +171,9 @@ export function mostrarMasValoradas() {
       ultimaListaPeliculas = data.results;
       data.results
         .sort((a, b) => b.vote_average - a.vote_average)
-        .slice(0, 8)
+        .slice(0, 12)
         .forEach(movie => {
-          const card = createMovieCard(movie);
+          const card = createMovieCard(movie, true); // <--- aquí el true
           moviesList.appendChild(card);
         });
       renderPaginacion();
@@ -241,5 +241,38 @@ moviesList.addEventListener('click', function(e) {
       mostrarDetalleActor(actorId);
     }
   }
+});
+
+// Autocompletado de nombres de actores
+let autocompleteList = document.createElement('ul');
+autocompleteList.className = 'list-group position-absolute w-100';
+autocompleteList.style.zIndex = 1000;
+actorSearchInput.parentNode.appendChild(autocompleteList);
+
+actorSearchInput.addEventListener('input', function() {
+  const query = actorSearchInput.value.trim();
+  autocompleteList.innerHTML = '';
+  if (query.length < 2) return;
+
+  fetch(`${BASE_URL}/search/person?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.results.length) return;
+      data.results.slice(0, 5).forEach(actor => {
+        const item = document.createElement('li');
+        item.className = 'list-group-item list-group-item-action';
+        item.textContent = actor.name;
+        item.addEventListener('mousedown', () => { // <-- Cambia 'click' por 'mousedown'
+          actorSearchInput.value = actor.name;
+          autocompleteList.innerHTML = '';
+        });
+        autocompleteList.appendChild(item);
+      });
+    });
+});
+
+// Ocultar sugerencias al perder foco
+actorSearchInput.addEventListener('blur', () => {
+  setTimeout(() => autocompleteList.innerHTML = '', 100);
 });
 

@@ -1,9 +1,10 @@
 /**
  * Genera el HTML de una tarjeta de película.
  * @param {Object} movie - Objeto película de la API.
+ * @param {boolean} mostrarVotos - Indica si se deben mostrar los votos.
  * @returns {HTMLElement} - Elemento <li> con la tarjeta.
  */
-export function createMovieCard(movie) {
+export function createMovieCard(movie, mostrarVotos = false) {
   const li = document.createElement('li');
   li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3';
 
@@ -18,8 +19,11 @@ export function createMovieCard(movie) {
       <div class="card-body">
         <h5 class="card-title mb-1">${movie.title}</h5>
         <p class="card-text mb-2">
-          <span class="text-warning">&#9733;</span>
-          <span>${movie.vote_average}</span>
+          ${
+            mostrarVotos
+              ? `<span class="text-primary"><i class="bi bi-people-fill"></i> ${movie.vote_count} votos</span>`
+              : `<span class="text-warning">&#9733;</span> <span>${movie.vote_average}</span>`
+          }
         </p>
       </div>
     </div>
@@ -117,9 +121,9 @@ export function showMovieModal(movie, API_KEY, BASE_URL) {
  * @param {Object} actor - Objeto actor de la API.
  * @returns {HTMLElement} - Elemento <li> con la tarjeta.
  */
-export function createActorCard(actor) {
+export function createActorCard(actor, onClick) {
   const li = document.createElement('li');
-  li.className = 'col-12 col-md-6 col-lg-4 mb-3';
+  li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3'; // Igual que las películas
 
   li.innerHTML = `
     <div class="card h-100 position-relative actor-card" data-actor-id="${actor.id}" style="cursor:pointer;">
@@ -132,5 +136,13 @@ export function createActorCard(actor) {
       </div>
     </div>
   `;
+
+  // Evento para mostrar el modal al hacer click en la card
+  li.querySelector('.card').addEventListener('click', () => {
+    if (typeof onClick === 'function') {
+      onClick(actor);
+    }
+  });
+
   return li;
 }
