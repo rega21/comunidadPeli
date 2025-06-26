@@ -329,6 +329,49 @@ async function mostrarFavoritos() {
   });
 }
 
+// Ejemplo para mostrar un carousel de estrenos/novedades en el inicio
+const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
+
+fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=es-ES&page=1`)
+  .then(res => res.json())
+  .then(data => {
+    const topMovies = data.results.slice(0, 5); // Muestra 5 estrenos
+    let carouselInner = topMovies.map((movie, idx) => `
+      <div class="carousel-item${idx === 0 ? ' active' : ''}">
+        <img src="https://image.tmdb.org/t/p/w780${movie.backdrop_path || '/path/to/horizontal-placeholder.jpg'}"
+             class="d-block w-100 carousel-img"
+             alt="${movie.title}"
+             data-movie-id="${movie.id}">
+      </div>
+    `).join('');
+
+    inicioCarouselContainer.innerHTML = `
+      <div id="inicioCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          ${carouselInner}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#inicioCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#inicioCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+    `;
+
+    // Evento para abrir el modal al hacer clic en la imagen del carousel
+    inicioCarouselContainer.addEventListener('click', function(e) {
+      const img = e.target.closest('.carousel-img');
+      if (img && img.dataset.movieId) {
+        const movieId = img.dataset.movieId;
+        const movie = topMovies.find(m => m.id == movieId);
+        if (movie) {
+          showMovieModal(movie);
+        }
+      }
+    });
+  });
+
 // Para películas
 setupAutocomplete(
   document.getElementById('searchInput'),

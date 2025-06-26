@@ -1,3 +1,11 @@
+body, .container {
+  background-color: #181818 !important; /* Fondo negro/gris oscuro */
+  color: #f5f5f5; /* Texto claro */
+}
+.card {
+  background-color: #232323;
+  color: #f5f5f5;
+}
 body {
   font-family: Arial, sans-serif;
   background: #f5f5f5;
@@ -9,17 +17,47 @@ ul {
   padding: 0;
 }
 #movies > li {
-  background: #fff;
-  margin-bottom: 2rem;
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #232323;
+  padding: 0.5rem; /* Menos padding */
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  color: #f5f5f5;
+  margin-bottom: 0; /* El gap ya separa verticalmente */
+  transition: box-shadow 0.2s, transform 0.2s;
 }
-img {
-  width: 200px;
-  height: 300px;
+
+
+#movies > li:hover {
+  box-shadow: 0 4px 16px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.25);
+  transform: translateY(-4px) scale(1.03);
+  z-index: 2;
+}
+
+#movies.row {
+  gap: 0; /* Sin separación para asegurar 6 por fila */
+}
+
+#searchInput {
+  background: #232323;
+  color: #f5f5f5;
+  border: none;
+}
+
+#searchInput::placeholder {
+  color: #bfc4c9;
+  opacity: 1;
+}
+
+#movies img {
+  width: 140px;
+  height: 207px;
   object-fit: cover;
   display: block;
+  margin-left: auto;
+  margin-right: auto;
   margin-bottom: 1rem;
 }
 /* Color al pasar el mouse (hover) */
@@ -49,6 +87,49 @@ img {
 .list-group.position-absolute {
   top: 100%;
   left: 0;
+}
+
+#inicioCarousel .carousel-item img,
+.carousel-img {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
+  display: block;
+}
+@media (max-width: 768px) {
+  #inicioCarousel .carousel-item img,
+  .carousel-img {
+    height: 200px;
+  }
+}
+
+/* Fondo y texto del modal Bootstrap */
+.modal-content {
+  background-color: #232323;
+  color: #f5f5f5;
+  border-radius: 10px;
+  border: none;
+}
+.modal-header, .modal-footer {
+  border: none;
+  background-color: #232323;
+  color: #f5f5f5;
+}
+.navbar, .navbar-dark, .navbar.bg-dark {
+  background-color: #181818 !important;
+  color: #f5f5f5 !important;
+  border: none;
+}
+.card-title {
+  font-family: 'Segoe UI', 'Arial', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  color: #f5f5f5;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
 }
 
 

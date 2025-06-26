@@ -6,24 +6,28 @@
  */
 export function createMovieCard(movie, mostrarVotos = false) {
   const li = document.createElement('li');
-  li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3';
+  li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3'; // <-- Aquí va la clase
 
   li.innerHTML = `
     <div class="card h-100 position-relative movie-card" style="cursor:pointer;">
       <img src="${movie.poster_path
         ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
         : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${movie.title}">
-      <button class="btn btn-light btn-sm rounded-circle position-absolute top-0 start-0 m-2 watchlist-btn" data-movie-id="${movie.id}" title="Agregar a Watchlist" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
-        <i class="bi bi-plus-lg fs-5"></i>
+      <button class="btn btn-dark btn-sm rounded-circle position-absolute top-0 start-0 m-2 watchlist-btn"
+        data-movie-id="${movie.id}"
+        title="Agregar a Watchlist"
+        style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:none;">
+        <i class="bi bi-plus-lg fs-5 text-white"></i>
       </button>
       <div class="card-body">
-        <h5 class="card-title mb-1">${movie.title}</h5>
+        
         <p class="card-text mb-2">
           ${
             mostrarVotos
               ? `<span class="text-primary"><i class="bi bi-people-fill"></i> ${movie.vote_count} votos</span>`
               : `<span class="text-warning">&#9733;</span> <span>${movie.vote_average}</span>`
           }
+           <h5 class="card-title mb-1">${movie.title}</h5>
         </p>
       </div>
     </div>
