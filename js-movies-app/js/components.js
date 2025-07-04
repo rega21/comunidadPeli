@@ -136,7 +136,6 @@ export function createActorCard(actor, onClick) {
         : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${actor.name}">
       <div class="card-body">
         <h5 class="card-title mb-1">${actor.name}</h5>
-        <p class="card-text">Conocido por: ${actor.known_for_department}</p>
       </div>
     </div>
   `;
@@ -149,4 +148,62 @@ export function createActorCard(actor, onClick) {
   });
 
   return li;
+}
+
+/**
+ * Genera el HTML de una tarjeta de director.
+ * @param {Object} director - Objeto director de la API.
+ * @param {Function} onClick - Función callback al hacer click.
+ * @returns {HTMLElement} - Elemento <li> con la tarjeta.
+ */
+export function createDirectorCard(director, onClick) {
+  const li = document.createElement('li');
+  li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3';
+
+  li.innerHTML = `
+    <div class="card h-100 position-relative director-card" data-director-id="${director.id}" style="cursor:pointer;">
+      <img src="${director.profile_path
+        ? `https://image.tmdb.org/t/p/w300${director.profile_path}`
+        : 'https://via.placeholder.com/300x450?text=No+Image'}" class="card-img-top" alt="${director.name}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">${director.name}</h5>
+      </div>
+    </div>
+  `;
+
+  // Evento para mostrar el modal al hacer click en la card
+  li.querySelector('.card').addEventListener('click', () => {
+    if (typeof onClick === 'function') {
+      onClick(director);
+    }
+  });
+
+  return li;
+}
+
+/**
+ * Busca el trailer de YouTube en inglés para una película.
+ * @param {number} movieId
+ * @param {string} API_KEY
+ * @param {string} BASE_URL
+ * @returns {Promise<string|null>} - Devuelve el key del trailer o null si no hay.
+ */
+export async function getYouTubeTrailerKeyEn(movieId, API_KEY, BASE_URL) {
+  try {
+    const res = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}&language=en-US`);
+    const data = await res.json();
+    // Busca trailer en inglés
+    let trailer = data.results.find(
+      v => v.type === 'Trailer' && v.site === 'YouTube' && v.iso_639_1 === 'en'
+    );
+    // Si no hay en inglés, busca cualquier trailer de YouTube
+    if (!trailer) {
+      trailer = data.results.find(
+        v => v.type === 'Trailer' && v.site === 'YouTube'
+      );
+    }
+    return trailer ? trailer.key : null;
+  } catch {
+    return null;
+  }
 }

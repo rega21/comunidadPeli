@@ -1,18 +1,22 @@
-import { createMovieCard, createMovieModalContent } from './components.js';
+import { createMovieCard, createMovieModalContent, getYouTubeTrailerKeyEn } from './components.js';
 import { setupNavbar } from './navbar.js';
-import { setPaginaActual } from './pagination.js';
+import { setPaginaActual, renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
 import { setupAutocomplete } from './autocomplete.js';
-import { renderImageCarousel, renderVideosCarousel } from './carousel.js';
+import { renderImageCarousel } from './carousel.js';
 
 const API_KEY = '12be8542502608cdcb8f5b86efa3ee46'; // Reemplaza con tu API key real
 const BASE_URL = 'https://api.themoviedb.org/3';
 const moviesList = document.getElementById('movies');
 const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
+const actorSearchInput = document.getElementById('actorSearchInput');
+
+let generoActual = null;
+let seccionActual = 'Inicio'; // Al cargar la página
 
 // Función para mostrar películas
 function renderMovies(movies) {
-  window.ultimaListaPeliculas = movies; // <-- Agrega esto
+  window.ultimaListaPeliculas = movies;
   moviesList.innerHTML = '';
   if (!movies || movies.length === 0) {
     moviesList.innerHTML = '<li class="col-12">No se encontraron películas.</li>';
@@ -55,31 +59,12 @@ function fetchPopularMovies() {
     });
 }
 
-/*
-// Función para cargar películas de inicio
-function fetchInicioMovies() {
-  const randomPage = Math.floor(Math.random() * 500) + 1; // 1 a 500
-  fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${randomPage}`)
-    .then(response => response.json())
-    .then(data => renderMovies(data.results))
-    .catch(() => {
-      moviesList.innerHTML = '<li class="col-12">Error al cargar películas de inicio.</li>';
-    });
-}
-  */
-
-
-import { renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
-
-let generoActual = null;
-
 // Función para cargar películas de inicio con paginación real
 function fetchInicioMovies() {
-  setSeccionActual(fetchInicioMovies);
   const randomYear = Math.floor(Math.random() * (2024 - 1980 + 1)) + 1980; // Entre 1980 y 2024
   fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_year=${randomYear}&page=${paginaActual}`)
     .then(response => response.json())
-    .then(data => {
+    .then (data => {
       renderMovies(data.results);
       setTotalPaginas(Math.min(data.total_pages, 10)); // Limita a 10 páginas si quieres
       renderPaginacion();
@@ -89,82 +74,79 @@ function fetchInicioMovies() {
     });
 }
 
-// Función para cargar películas en tendencia
-function fetchTrendingMovies() {
-  const randomPage = Math.floor(Math.random() * 10) + 1; // Cambia 10 por el máximo de páginas que quieras permitir
-  fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${randomPage}`)
-    .then(response => response.json())
-    .then(data => renderMovies(data.results))
-    .catch(() => {
-      moviesList.innerHTML = '<li class="col-12">Error al cargar películas en tendencia.</li>';
-    });
-}
-
-// Función para cargar clásicos
-function fetchClassics() {
-  const randomPage = Math.floor(Math.random() * 10) + 1; // Cambia 10 por el máximo de páginas que quieras permitir
-  fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_date.lte=2000-12-31&page=${randomPage}`)
-    .then(response => response.json())
-    .then(data => renderMovies(data.results))
-    .catch(() => {
-      moviesList.innerHTML = '<li class="col-12">Error al cargar clásicos.</li>';
-    });
-}
-
-// Función para buscar películas por género con paginación real
-function fetchMoviesByGenre() {
-  if (!generoActual) return;
-  setSeccionActual(fetchMoviesByGenre);
-  fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${generoActual}&page=${paginaActual}`)
-    .then(response => response.json())
-    .then(data => {
-      renderMovies(data.results);
-      setTotalPaginas(Math.min(data.total_pages, 10));
-      renderPaginacion();
-    })
-    .catch(() => {
-      moviesList.innerHTML = '<li class="col-12">Error al filtrar por género.</li>';
-    });
-}
-
-// Evento de búsqueda
-searchForm.addEventListener('submit', function (e) {
-  e.preventDefault();
-  const query = searchInput.value.trim();
-  if (query) {
-    searchMovies(query);
-  } else {
-    fetchInicioMovies(); // Ahora muestra resultados variados también al buscar vacío
-  }
-});
-
 // Inicializar con películas variadas
 fetchInicioMovies();
 
+// --- SETUP AUTOCOMPLETE ---
+setupAutocomplete(
+  searchInput,
+  (query) => `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`,
+  (item) => item.title,
+  (item) => item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : 'https://via.placeholder.com/32x48?text=No+Img'
+);
+
+setupAutocomplete(
+  actorSearchInput,
+  (query) => `${BASE_URL}/search/person?api_key=${API_KEY}&query=${encodeURIComponent(query)}`,
+  (item) => item.name,
+  (item) => item.profile_path ? `https://image.tmdb.org/t/p/w92${item.profile_path}` : 'https://via.placeholder.com/32x48?text=No+Img'
+);
+
+// --- SETUP NAVBAR Y CONTROL DE CAROUSEL ---
 setupNavbar(
   (section) => {
     // Quitar selección de género al cambiar de sección
     document.querySelectorAll('#genreDropdownMenu .dropdown-item').forEach(el => el.classList.remove('active-genre'));
-    // Limpiar mensaje de género SOLO si no es el menú Género
     if (section !== 'Género') {
       document.getElementById('genreResultMsg').textContent = '';
     }
+    const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
     switch (section) {
       case 'Inicio':
-        fetchInicioMovies();
+        if (searchForm) searchForm.style.display = '';
+        if (seccionActual !== 'Inicio') {
+          setSeccionActual(fetchInicioMovies);
+          fetchInicioMovies();
+          seccionActual = 'Inicio';
+        }
+        // Mostrar el carousel solo en Inicio
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = '';
+        }
         break;
       case 'Buscar':
         searchInput.focus();
+        seccionActual = 'Buscar';
+        // Ocultar el carousel
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = 'none';
+        }
         break;
       case 'Favoritos':
-        mostrarFavoritos(); // Esta función debe estar implementada como te mostré antes
+        mostrarFavoritos();
+        seccionActual = 'Favoritos';
+        // Ocultar el carousel
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = 'none';
+        }
         break;
       case '¿Qué ver este finde?':
         fetchTrendingMovies();
+        seccionActual = '¿Qué ver este finde?';
+        // Ocultar el carousel
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = 'none';
+        }
         break;
       case 'Clásicos':
         fetchClassics();
+        seccionActual = 'Clásicos';
+        // Ocultar el carousel
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = 'none';
+        }
         break;
+      // ...otros cases...
     }
   },
   (genreId) => {
@@ -179,13 +161,19 @@ setupNavbar(
       : '';
     // Reiniciar a la primera página
     setPaginaActual(1);
+    // Ocultar el carousel al seleccionar un género
+    const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
+    if (inicioCarouselContainer) {
+      inicioCarouselContainer.style.display = 'none';
+    }
     fetchMoviesByGenre();
   },
   API_KEY,
   BASE_URL
 );
 
-function showMovieModal(movie) {
+// --- MODAL Y EVENTOS ---
+async function showMovieModal(movie) {
   const modalTitle = document.getElementById('movieModalLabel');
   const modalBody = document.querySelector('#movieModal .modal-body');
   modalTitle.textContent = movie.title;
@@ -195,36 +183,29 @@ function showMovieModal(movie) {
   fetch(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`)
     .then(response => response.json())
     .then(data => {
-      const cast = data.cast.slice(0, 5).map(actor => actor.name).join(', ');
-      const directors = data.crew.filter(person => person.job === 'Director').map(d => d.name).join(', ');
+      const cast = Array.isArray(data.cast) ? data.cast.slice(0, 5).map(actor => actor.name).join(', ') : 'No disponible';
+      const directors = Array.isArray(data.crew) ? data.crew.filter(person => person.job === 'Director').map(d => d.name).join(', ') : 'No disponible';
       const infoExtra = `
-        <p><strong>Director:</strong> ${directors || 'No disponible'}</p>
-        <p><strong>Actores principales:</strong> ${cast || 'No disponible'}</p>
+        <p><strong>Director:</strong> ${directors}</p>
+        <p><strong>Actores principales:</strong> ${cast}</p>
       `;
-      // Inserta la info antes del trailer
       const trailerContainer = document.getElementById('trailer-container');
-      trailerContainer.insertAdjacentHTML('beforebegin', infoExtra);
-    });
-
-  // Buscar trailer en TMDB
-  fetch(`${BASE_URL}/movie/${movie.id}/videos?api_key=${API_KEY}`)
-    .then(response => response.json())
-    .then(data => {
-      const trailer = data.results.find(
-        v => v.type === 'Trailer' && v.site === 'YouTube'
-      ) || data.results.find(
-        v => v.site === 'YouTube'
-      );
-      if (trailer) {
-        document.getElementById('trailer-container').innerHTML = `
-          <a href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener" class="btn btn-danger mt-3">
-            Ver tráiler en YouTube
-          </a>
-        `;
-      } else {
-        document.getElementById('trailer-container').innerHTML = `<p class="text-muted">No hay tráiler disponible.</p>`;
+      if (trailerContainer) {
+        trailerContainer.insertAdjacentHTML('beforebegin', infoExtra);
       }
     });
+
+  // Buscar trailer en inglés (o el primero disponible)
+  const trailerKey = await getYouTubeTrailerKeyEn(movie.id, API_KEY, BASE_URL);
+  if (trailerKey) {
+    document.getElementById('trailer-container').innerHTML = `
+      <a href="https://www.youtube.com/watch?v=${trailerKey}" target="_blank" rel="noopener" class="btn btn-danger mt-3">
+        Ver tráiler en YouTube
+      </a>
+    `;
+  } else {
+    document.getElementById('trailer-container').innerHTML = `<p class="text-muted">No hay tráiler disponible.</p>`;
+  }
 
   // Mostrar el modal (Bootstrap 5)
   const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('movieModal'));
@@ -302,6 +283,9 @@ async function mostrarFavoritos() {
   const pagination = document.getElementById('pagination');
   if (pagination) pagination.classList.add('d-none');
 
+  // Oculta el buscador de búsqueda completo
+  if (searchForm) searchForm.style.display = 'none';
+
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   if (!usuario) {
     moviesList.innerHTML = '<li class="col-12">Debes iniciar sesión para ver tus favoritos.</li>';
@@ -309,7 +293,8 @@ async function mostrarFavoritos() {
   }
   moviesList.innerHTML = '<li class="col-12">Cargando favoritos...</li>';
   const res = await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos?mail=${usuario.mail}`);
-  const favoritos = await res.json();
+  let favoritos = await res.json();
+  if (!Array.isArray(favoritos)) favoritos = [];
   if (!favoritos.length) {
     moviesList.innerHTML = '<li class="col-12">No tienes películas en tu Watchlist.</li>';
     return;
@@ -330,58 +315,45 @@ async function mostrarFavoritos() {
   });
 }
 
-// Ejemplo para mostrar un carousel de estrenos/novedades en el inicio
-const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
-
-fetch(`https://api.themoviedb.org/3/movie/now_playing?api_key=${API_KEY}&language=es-ES&page=1`)
-  .then(res => res.json())
-  .then(data => {
-    const topMovies = data.results.slice(0, 5); // Muestra 5 estrenos
-    renderImageCarousel(inicioCarouselContainer, topMovies);
-    // ...eventos para modal...
-  });
-
-// Para el carousel de videos
-fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&language=es-ES&page=1`)
-  .then(res => res.json())
-  .then(async data => {
-    await renderVideosCarousel(videosCarouselContainer, data.results.slice(0, 5), API_KEY);
-  });
-
-// Para películas
-setupAutocomplete(
-  document.getElementById('searchInput'),
-  query => `${BASE_URL}/search/movie?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`,
-  movie => movie.title,
-  movie => movie.poster_path ? `https://image.tmdb.org/t/p/w45${movie.poster_path}` : ''
-);
-
-// Para actores
-setupAutocomplete(
-  document.getElementById('actorSearchInput'),
-  query => `${BASE_URL}/search/person?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`,
-  actor => actor.name,
-  actor => actor.profile_path ? `https://image.tmdb.org/t/p/w45${actor.profile_path}` : ''
-);
-
-
-/*
+// Carousel de imágenes (estrenos) y trailers/teasers SOLO una vez al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
-  const videosCarousel = document.getElementById('videosCarousel');
-  if (videosCarousel) {
-    videosCarousel.addEventListener('slid.bs.carousel', function () {
-      // Encuentra el slide activo
-      const activeItem = videosCarousel.querySelector('.carousel-item.active');
-      // Pausa todos los iframes menos el del slide activo
-      videosCarousel.querySelectorAll('.carousel-item').forEach(item => {
-        const iframe = item.querySelector('iframe');
-        if (iframe && item !== activeItem) {
-          const src = iframe.src;
-          iframe.src = src; // Esto pausa el video
+  const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
+  if (inicioCarouselContainer) {
+    inicioCarouselContainer.style.display = 'none';
+  }
+
+  // Carousel de estrenos (solo carga las imágenes, no lo muestra)
+  if (inicioCarouselContainer) {
+    fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=es-ES&page=1`)
+      .then(res => res.json())
+      .then(data => {
+        const topMovies = data.results.slice(0, 6);
+        renderImageCarousel(inicioCarouselContainer, topMovies, showMovieModal);
+        // Mostrar el carousel si la sección es Inicio al cargar la página
+        if (seccionActual === 'Inicio') {
+          inicioCarouselContainer.style.display = '';
         }
       });
-    });
   }
 });
 
-*/
+function fetchMoviesByGenre() {
+  if (!generoActual) return;
+  fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${generoActual}&language=es-ES&page=${paginaActual}`)
+    .then(response => response.json())
+    .then(data => {
+      renderMovies(data.results);
+      setTotalPaginas(Math.min(data.total_pages, 10));
+      renderPaginacion();
+      exploreResultMsg.textContent = '' // Borra el mensaje siempre al mostrar un género
+    })
+    .catch(() => {
+      moviesList.innerHTML = '<li class="col-12">Error al cargar películas por género.</li>';
+    });
+}
+
+
+
+
+
+

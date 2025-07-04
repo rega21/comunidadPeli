@@ -14,6 +14,7 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
   });
 
   // Cargar géneros en el dropdown
+
   fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=es-ES`)
     .then(response => response.json())
     .then(data => {
@@ -72,10 +73,7 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
       loginMenuItem.href = "js/registro/login.html";
     }
   }
-  // Agregar el contenedor del estado del usuario en la navegación
-  const navbarNav = document.getElementById('navbarNav');
-  const estadoUsuarioContainer = document.createElement('span');
-  estadoUsuarioContainer.id = 'estadoUsuario';
-  estadoUsuarioContainer.className = 'text-success small ms-3 d-none';
-  navbarNav.appendChild(estadoUsuarioContainer);
+
 }
+
+
