@@ -263,17 +263,99 @@ export function mostrarPremios() {
   `;
 }
 
+// REEMPLAZAR COMPLETAMENTE la función mostrarNoticias()
+
 export function mostrarNoticias() {
   setSeccionActual(mostrarNoticias);
   actorSearchForm.classList.add('d-none');
-  searchForm.classList.remove('d-none');
-  exploreResultMsg.textContent = 'Noticias';
-  moviesList.innerHTML = `
-    <li class="col-12">
-      <h3>Noticias</h3>
-      <p>Próximamente podrás leer noticias y novedades del mundo del cine.</p>
-    </li>
-  `;
+  searchForm.classList.add('d-none');
+  exploreResultMsg.textContent = 'Noticias Cinematográficas';
+  moviesList.innerHTML = '<li class="col-12">Cargando las últimas noticias...</li>';
+  
+  setTimeout(() => {
+    moviesList.innerHTML = `
+      <li class="col-12 mb-4">
+        <!-- Noticia Principal: Thanos Meme -->
+        <div class="card border-warning">
+          <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">🎬 EXCLUSIVA: La verdadera cara de disney </h4>
+            <small class="text-muted">Publicado hace 2 horas</small>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <p class="lead">Se filtra video exclusivo de detrás de cámaras de Avengers que muestra a Thanos en acción...</p>
+                <div class="video-container">
+                  <video 
+                    controls 
+                    width="100%" 
+                    style="max-height: 400px; border-radius: 8px;"
+                    poster="https://via.placeholder.com/800x450/6f42c1/white?text=🎭+THANOS+EXCLUSIVO"
+                  >
+                    <source src="./video/ThanosMeme.mp4" type="video/mp4">
+                    Tu navegador no soporta la reproducción de video.
+                  </video>
+                </div>
+                <p class="mt-3">
+                  <strong>🎯 Resumen:</strong> Video exclusivo que muestra momentos nunca antes vistos del rodaje de Avengers. 
+                  Los fans están enloqueciendo en redes sociales con este material filtrado.
+                </p>
+                <div class="d-flex gap-2">
+                  <span class="badge bg-primary">#Thanos</span>
+                  <span class="badge bg-success">#Marvel</span>
+                  <span class="badge bg-info">#Exclusiva</span>
+                  <span class="badge bg-warning text-dark">#Filtrado</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <h6>📊 Reacciones</h6>
+                    <p class="mb-2">👍 <strong>2.5M</strong> Me gusta</p>
+                    <p class="mb-2">💬 <strong>847K</strong> Comentarios</p>
+                    <p class="mb-2">🔄 <strong>1.2M</strong> Compartidos</p>
+                    <hr>
+                    <h6>🔥 Trending</h6>
+                    <p class="mb-1">#1 en Marvel</p>
+                    <p class="mb-1">#3 en Cine</p>
+                    <p class="mb-0">#7 en General</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+      
+      <!-- Otras noticias -->
+      <li class="col-md-6 mb-4">
+        <div class="card h-100 border-info">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">🎭 Nuevos Estrenos</h5>
+          </div>
+          <div class="card-body">
+            <p>Las películas más esperadas del próximo mes llegan a los cines...</p>
+            <small class="text-muted">Hace 4 horas</small>
+          </div>
+        </div>
+      </li>
+      
+      <li class="col-md-6 mb-4">
+        <div class="card h-100 border-success">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">🏆 Temporada de Premios</h5>
+          </div>
+          <div class="card-body">
+            <p>Se anuncian las nominaciones para los próximos premios cinematográficos...</p>
+            <small class="text-muted">Hace 6 horas</small>
+          </div>
+        </div>
+      </li>
+    `;
+    
+    setTotalPaginas(1);
+    renderPaginacion();
+  }, 300);
 }
 
 // Tendencias
@@ -320,6 +402,7 @@ export function mostrarMasValoradas() {
   searchForm.classList.remove('d-none');
   exploreResultMsg.textContent = 'Top rating';
   moviesList.innerHTML = '<li class="col-12">Cargando películas mejor valoradas...</li>';
+  
   fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=es-ES&page=${paginaActual}`)
     .then(res => res.json())
     .then(data => {
