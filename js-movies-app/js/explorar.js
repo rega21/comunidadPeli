@@ -23,6 +23,7 @@ let ultimaListaActores = [];
 
 // Mostrar actores populares
 export function mostrarActores() {
+ // moviesList.innerHTML = ''; // ← Agrega esto
   setSeccionActual(mostrarActores);
   actorSearchForm.classList.remove('d-none');
   searchForm.classList.add('d-none');
@@ -540,12 +541,20 @@ if (menuDropdownMenu) {
     }
 
     switch (item.textContent.trim()) {
+      case 'Inicio':
+        moviesList.innerHTML = '';
+        exploreResultMsg.textContent = 'Bienvenido a Movies App';
+        const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
+        if (inicioCarouselContainer) {
+          inicioCarouselContainer.style.display = '';
+        }
+        break;
       case 'Actores':
-        setPaginaActual(1); // Resetear a página 1
+        setPaginaActual(1);
         mostrarActores();
         break;
       case 'Directores':
-        setPaginaActual(1); // Resetear a página 1
+        setPaginaActual(1);
         mostrarDirectores();
         break;
       case 'Premios':

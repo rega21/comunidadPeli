@@ -104,12 +104,9 @@ setupNavbar(
     switch (section) {
       case 'Inicio':
         if (searchForm) searchForm.style.display = '';
-        if (seccionActual !== 'Inicio') {
-          setSeccionActual(fetchInicioMovies);
-          fetchInicioMovies();
-          seccionActual = 'Inicio';
-        }
-        // Mostrar el carousel solo en Inicio
+        setSeccionActual(fetchInicioMovies);
+        fetchInicioMovies();
+        seccionActual = 'Inicio';
         if (inicioCarouselContainer) {
           inicioCarouselContainer.style.display = '';
         }
