@@ -2,7 +2,7 @@
 
 
 // filepath: c:\Users\user\Desktop\Programacion\Js\movies-app\js-movies-app\js\Menu.js
-import { API_KEY, BASE_URL } from './config.js';
+import { API_KEY, BASE_URL, OMDB_KEY } from './config.js';
 import { 
   createMovieCard, 
   showMovieModal, 
@@ -23,7 +23,9 @@ let ultimaListaActores = [];
 
 // Mostrar actores populares
 export function mostrarActores() {
- // moviesList.innerHTML = ''; // ← Agrega esto
+ 
+
+
   setSeccionActual(mostrarActores);
   actorSearchForm.classList.remove('d-none');
   searchForm.classList.add('d-none');
@@ -62,6 +64,9 @@ export function mostrarActores() {
 
 // Mostrar directores populares
 export function mostrarDirectores() {
+  pagination.style.display = 'block'; // mostrar la paginación
+
+
   setSeccionActual(mostrarDirectores);
   actorSearchForm.classList.add('d-none');
   searchForm.classList.add('d-none');
@@ -252,16 +257,83 @@ function mostrarDetalleDirector(directorId) {
 
 // Otras secciones de Menu
 export function mostrarPremios() {
+  pagination.style.display = 'none'; // Oculta la paginación
+
   setSeccionActual(mostrarPremios);
   actorSearchForm.classList.add('d-none');
   searchForm.classList.remove('d-none');
-  exploreResultMsg.textContent = 'Premios';
-  moviesList.innerHTML = `
-    <li class="col-12">
-      <h3>Premios</h3>
-      <p>Próximamente podrás ver información sobre premios y nominaciones.</p>
-    </li>
-  `;
+  exploreResultMsg.textContent = 'Premios y Oscars';
+
+  // 24 películas de referencia
+  const titulos = [
+    'Forrest Gump', 'The Godfather', 'Titanic', 'Gladiator', 'La La Land', 'Schindler\'s List',
+    'The Shawshank Redemption', 'Pulp Fiction', 'The Lord of the Rings: The Return of the King', 'Braveheart',
+    'A Beautiful Mind', 'Chicago', 'Slumdog Millionaire', 'No Country for Old Men', 'The Artist',
+    'Million Dollar Baby', 'The Departed', 'Crash', 'The King\'s Speech', 'Argo', 'Birdman',
+    'Spotlight', 'Moonlight', 'Green Book', 'Parasite'
+  ];
+
+  // Selecciona 12 aleatorias
+  const seleccionadas = titulos
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 12);
+
+  moviesList.innerHTML = '<li class="col-12">Cargando premios...</li>';
+
+  Promise.all(
+    seleccionadas.map(async titulo => {
+      const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&t=${encodeURIComponent(titulo)}`);
+      const data = await res.json();
+      return {
+        titulo: data.Title || titulo,
+        year: data.Year || '',
+        awards: data.Awards || 'Sin información de premios',
+        poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/100x150?text=No+Img',
+        imdbID: data.imdbID || ''
+      };
+    })
+  ).then(premios => {
+    moviesList.innerHTML = premios.map(p =>
+      `<li class="col-12 col-md-6 col-lg-2 mb-4">
+        <div class="card h-100 premio-card" data-imdb-id="${p.imdbID}">
+          <img src="${p.poster}" class="card-img-top" alt="${p.titulo}">
+          <div class="card-body">
+            <h6 class="card-title">${p.titulo} (${p.year})</h6>
+          </div>
+        </div>
+      </li>`
+    ).join('');
+  });
+
+  searchInput.placeholder = 'Buscar película para ver premios...';
+  searchForm.onsubmit = async function(e) {
+    e.preventDefault();
+    const titulo = searchInput.value.trim();
+    if (!titulo) return;
+    moviesList.innerHTML = '<li class="col-12">Buscando premios...</li>';
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&t=${encodeURIComponent(titulo)}`);
+    const data = await res.json();
+    moviesList.innerHTML = `
+
+      <li class="col-12 col-md-6 col-lg-2 mb-4">
+        <div class="card h-100 premio-card" data-imdb-id="${data.imdbID || ''}">
+          <img src="${data.Poster && data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/100x150?text=No+Img'}" class="card-img-top" alt="${data.Title}">
+          <div class="card-body">
+            <h6 class="card-title">${data.Title || titulo} (${data.Year || ''})</h6>
+          </div>
+       <li class="col-12 mb-3 text-center">
+        <button id="volverPremios" class="btn btn-secondary btn-sm">Ver todas las películas premiadas</button>
+      </li>
+       </div>
+        
+      </li>
+    `;
+
+    // Listener para volver a mostrar todas las cards de premios
+    document.getElementById('volverPremios').onclick = function() {
+      mostrarPremios();
+    };
+  };
 }
 
 // REEMPLAZAR COMPLETAMENTE la función mostrarNoticias()
@@ -309,7 +381,7 @@ export function mostrarNoticias() {
                 </div>
               </div>
               <div class="col-md-4">
-                <div class="card bg-light">
+                <div class="bg-dark text-white">
                   <div class="card-body">
                     <h6>📊 Reacciones</h6>
                     <p class="mb-2">👍 <strong>2.5M</strong> Me gusta</p>
@@ -361,6 +433,7 @@ export function mostrarNoticias() {
 
 // Tendencias
 export function mostrarTendencias() {
+
   setPaginaActual(1); // Resetear a página 1
   setSeccionActual(mostrarTendencias);
   actorSearchForm.classList.add('d-none');
@@ -397,6 +470,9 @@ export function mostrarTendencias() {
 
 // Más valoradas
 export function mostrarMasValoradas() {
+  pagination.style.display = 'block';
+
+
   setPaginaActual(1); // Resetear a página 1
   setSeccionActual(mostrarMasValoradas);
   actorSearchForm.classList.add('d-none');
@@ -406,7 +482,7 @@ export function mostrarMasValoradas() {
   
   fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=es-ES&page=${paginaActual}`)
     .then(res => res.json())
-    .then(data => {
+    .then (data => {
       moviesList.innerHTML = '';
       
       // Verificar si hay resultados
@@ -573,3 +649,32 @@ if (menuDropdownMenu) {
     }
   });
 }
+
+// Nuevo listener para los botones de ver detalles de premios
+moviesList.addEventListener('click', async function(e) {
+  const card = e.target.closest('.premio-card');
+  if (card) {
+    const imdbID = card.getAttribute('data-imdb-id');
+    if (!imdbID) return;
+    const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${imdbID}`);
+    const data = await res.json();
+    const modalBody = document.querySelector('#premioModal .modal-body');
+    modalBody.innerHTML = `
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <img src="${data.Poster && data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/300x450?text=No+Img'}" class="img-fluid rounded shadow mt-3 mb-3" alt="${data.Title}">
+        </div>
+        <div class="col-md-8">
+          <h4>${data.Title || ''} (${data.Year || ''})</h4>
+          <p><strong>Premios:</strong> ${data.Awards || 'Sin información de premios'}</p>
+          <p><strong>Director:</strong> ${data.Director || 'No disponible'}</p>
+          <p><strong>Actores:</strong> ${data.Actors || 'No disponible'}</p>
+          <p><strong>Sinopsis:</strong> ${data.Plot || 'No disponible.'}</p>
+          <a href="https://www.imdb.com/title/${imdbID}/" target="_blank" class="btn btn-outline-warning btn-sm mt-2">Ver en IMDb</a>
+        </div>
+      </div>
+    `;
+    const modal = new bootstrap.Modal(document.getElementById('premioModal'));
+    modal.show();
+  }
+});

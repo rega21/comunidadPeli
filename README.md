@@ -1,59 +1,71 @@
 # Movies App
 
-This is a simple movies application that interacts with The Movie Database (TMDb) API to fetch and display movie information.
+Aplicación web para explorar películas, actores y directores, construida con JavaScript vanilla y Bootstrap 5.
 
-## Project Structure
+## Features
 
-```
-movies-app
-├── src
-│   ├── api
-│   │   └── tmdb.ts          # Functions to interact with TMDb API
-│   ├── components
-│   │   └── MovieList.tsx    # React component to display a list of movies
-│   ├── pages
-│   │   └── Home.tsx         # Home page that uses MovieList component
-│   └── types
-│       └── movie.d.ts       # TypeScript interfaces for movie data
-├── package.json              # npm configuration file
-├── tsconfig.json             # TypeScript configuration file
-└── README.md                 # Project documentation
-```
+- Explorar películas populares, tendencias, mejor puntuadas y estrenos
+- Filtrar por género
+- Búsqueda con autocompletado (películas y actores)
+- Perfiles de actores y directores con filmografía
+- Modal con detalle de película: sinopsis, reparto, director y trailer de YouTube
+- Sección de premios Oscar (vía OMDb)
+- Watchlist personal para usuarios registrados
+- Carrusel de próximos estrenos
+- Paginación
+- Sistema de login y registro
 
-## Setup Instructions
+## Tecnologías
 
-1. Clone the repository:
-   ```
+- HTML5 / CSS3 / JavaScript ES6 (módulos)
+- Bootstrap 5.3
+- TMDb API — datos de películas, actores y directores
+- OMDb API — información de premios
+- MockAPI — backend para usuarios y watchlist
+
+## Configuración
+
+1. Clona el repositorio:
+   ```bash
    git clone <repository-url>
-   ```
-
-2. Navigate to the project directory:
-   ```
    cd movies-app
    ```
 
-3. Install the dependencies:
-   ```
-   npm install
-   ```
-
-4. Start the application:
-   ```
-   npm start
+2. Copia el archivo de configuración y completá con tus propias API keys:
+   ```bash
+   cp js-movies-app/js/config.example.js js-movies-app/js/config.js
    ```
 
-## Usage
+3. Editá `config.js` con tus keys:
+   - **TMDb API key**: [themoviedb.org/settings/api](https://www.themoviedb.org/settings/api)
+   - **OMDb API key**: [omdbapi.com/apikey.aspx](https://www.omdbapi.com/apikey.aspx)
+   - **MockAPI URL**: [mockapi.io](https://mockapi.io)
 
-- The application fetches movie data from TMDb API and displays it on the Home page.
-- You can explore different movie lists and details by interacting with the UI.
+4. Abrí `js-movies-app/index.html` en el navegador (requiere servidor local por los módulos ES6).
 
-## Contributing
+   Con VS Code podés usar la extensión **Live Server**.
 
-Feel free to submit issues or pull requests for improvements or bug fixes. 
+## Estructura
 
-## License
-
-This project is licensed under the MIT License.
-
-
-> ⚠️ This project uses a public TMDB API Key for educational and demonstration purposes only. If you plan to use it in production, please create your own key and protect it appropriately.
+```
+js-movies-app/
+├── index.html
+├── css/
+│   ├── style.css
+│   └── registro.css
+└── js/
+    ├── config.example.js   # Plantilla de configuración (commitear)
+    ├── config.js           # API keys reales (NO commitear, en .gitignore)
+    ├── app.js              # Lógica principal
+    ├── explorar.js         # Sección explorar (actores, directores, tendencias)
+    ├── components.js       # Componentes reutilizables (modales, cards)
+    ├── navbar.js           # Navegación y géneros
+    ├── carousel.js         # Carrusel de estrenos
+    ├── autocomplete.js     # Búsqueda con autocompletado
+    ├── pagination.js       # Paginación
+    └── registro/
+        ├── login.html
+        ├── signup.html
+        ├── auth-signin.js
+        └── auth-signup.js
+```

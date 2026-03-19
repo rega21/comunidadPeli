@@ -3,9 +3,7 @@ import { setupNavbar } from './navbar.js';
 import { setPaginaActual, renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
 import { setupAutocomplete } from './autocomplete.js';
 import { renderImageCarousel } from './carousel.js';
-
-const API_KEY = '12be8542502608cdcb8f5b86efa3ee46'; // Reemplaza con tu API key real
-const BASE_URL = 'https://api.themoviedb.org/3';
+import { API_KEY, BASE_URL, MOCKAPI_URL } from './config.js';
 const moviesList = document.getElementById('movies');
 const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
@@ -245,16 +243,16 @@ document.addEventListener('click', async function(e) {
     const icon = watchBtn.querySelector('i');
 
     // Consultar si ya existe el favorito en MockAPI
-    const res = await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos?mail=${usuario.mail}&movieId=${movieId}`);
+    const res = await fetch(`${MOCKAPI_URL}/favoritos?mail=${usuario.mail}&movieId=${movieId}`);
     const favoritos = await res.json();
 
     if (favoritos.length > 0 && favoritos[0].id) {
       // Quitar de favoritos (DELETE)
-      await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos/${favoritos[0].id}`, { method: 'DELETE' });
+      await fetch(`${MOCKAPI_URL}/favoritos/${favoritos[0].id}`, { method: 'DELETE' });
       icon.className = 'bi bi-bookmark';
     } else {
       // Agregar a favoritos (POST)
-      await fetch('https://685abb749f6ef9611157981f.mockapi.io/favoritos', {
+      await fetch(`${MOCKAPI_URL}/favoritos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mail: usuario.mail, movieId })
@@ -289,7 +287,7 @@ async function mostrarFavoritos() {
     return;
   }
   moviesList.innerHTML = '<li class="col-12">Cargando favoritos...</li>';
-  const res = await fetch(`https://685abb749f6ef9611157981f.mockapi.io/favoritos?mail=${usuario.mail}`);
+  const res = await fetch(`${MOCKAPI_URL}/favoritos?mail=${usuario.mail}`);
   let favoritos = await res.json();
   if (!Array.isArray(favoritos)) favoritos = [];
   if (!favoritos.length) {
