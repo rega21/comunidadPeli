@@ -255,28 +255,38 @@ function mostrarDetalleDirector(directorId) {
   });
 }
 
+const TITULOS_PREMIOS = [
+  'Forrest Gump', 'The Godfather', 'Titanic', 'Gladiator', 'La La Land', "Schindler's List",
+  'The Shawshank Redemption', 'Pulp Fiction', 'The Lord of the Rings: The Return of the King', 'Braveheart',
+  'A Beautiful Mind', 'Chicago', 'Slumdog Millionaire', 'No Country for Old Men', 'The Artist',
+  'Million Dollar Baby', 'The Departed', 'Crash', "The King's Speech", 'Argo', 'Birdman',
+  'Spotlight', 'Moonlight', 'Green Book', 'Parasite', 'CODA', 'Everything Everywhere All at Once',
+  'Oppenheimer', 'The Shape of Water', 'Three Billboards Outside Ebbing Missouri', 'Dunkirk',
+  'Mad Max: Fury Road', 'The Revenant', 'Whiplash', '12 Years a Slave', 'Gravity',
+  'Argo', 'The Hurt Locker', 'Slumdog Millionaire', 'No Country for Old Men', 'The Departed',
+  'Million Dollar Baby', 'The Return of the King', 'Chicago', 'A Beautiful Mind', 'Gladiator',
+  'American Beauty', 'Shakespeare in Love', 'Titanic', 'The English Patient', 'Braveheart',
+  'Forrest Gump', 'Unforgiven', 'Silence of the Lambs', 'Dances with Wolves', 'Driving Miss Daisy',
+  'Rain Man', 'Platoon', 'Out of Africa', 'Amadeus', 'Terms of Endearment'
+];
+
+const TITULOS_PREMIOS_UNICOS = [...new Set(TITULOS_PREMIOS)];
+const ITEMS_POR_PAGINA_PREMIOS = 12;
+
 // Otras secciones de Menu
 export function mostrarPremios() {
-  pagination.style.display = 'none'; // Oculta la paginación
+  pagination.style.display = 'block';
 
   setSeccionActual(mostrarPremios);
   actorSearchForm.classList.add('d-none');
   searchForm.classList.remove('d-none');
   exploreResultMsg.textContent = 'Premios y Oscars';
 
-  // 24 películas de referencia
-  const titulos = [
-    'Forrest Gump', 'The Godfather', 'Titanic', 'Gladiator', 'La La Land', 'Schindler\'s List',
-    'The Shawshank Redemption', 'Pulp Fiction', 'The Lord of the Rings: The Return of the King', 'Braveheart',
-    'A Beautiful Mind', 'Chicago', 'Slumdog Millionaire', 'No Country for Old Men', 'The Artist',
-    'Million Dollar Baby', 'The Departed', 'Crash', 'The King\'s Speech', 'Argo', 'Birdman',
-    'Spotlight', 'Moonlight', 'Green Book', 'Parasite'
-  ];
+  const totalPagsPremios = Math.ceil(TITULOS_PREMIOS_UNICOS.length / ITEMS_POR_PAGINA_PREMIOS);
+  setTotalPaginas(totalPagsPremios);
 
-  // Selecciona 12 aleatorias
-  const seleccionadas = titulos
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 12);
+  const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA_PREMIOS;
+  const seleccionadas = TITULOS_PREMIOS_UNICOS.slice(inicio, inicio + ITEMS_POR_PAGINA_PREMIOS);
 
   moviesList.innerHTML = '<li class="col-12">Cargando premios...</li>';
 
@@ -287,7 +297,6 @@ export function mostrarPremios() {
       return {
         titulo: data.Title || titulo,
         year: data.Year || '',
-        awards: data.Awards || 'Sin información de premios',
         poster: data.Poster && data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/100x150?text=No+Img',
         imdbID: data.imdbID || ''
       };
@@ -303,6 +312,7 @@ export function mostrarPremios() {
         </div>
       </li>`
     ).join('');
+    renderPaginacion();
   });
 
   searchInput.placeholder = 'Buscar película para ver premios...';
@@ -311,26 +321,24 @@ export function mostrarPremios() {
     const titulo = searchInput.value.trim();
     if (!titulo) return;
     moviesList.innerHTML = '<li class="col-12">Buscando premios...</li>';
+    pagination.style.display = 'none';
     const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&t=${encodeURIComponent(titulo)}`);
     const data = await res.json();
     moviesList.innerHTML = `
-
       <li class="col-12 col-md-6 col-lg-2 mb-4">
         <div class="card h-100 premio-card" data-imdb-id="${data.imdbID || ''}">
           <img src="${data.Poster && data.Poster !== 'N/A' ? data.Poster : 'https://via.placeholder.com/100x150?text=No+Img'}" class="card-img-top" alt="${data.Title}">
           <div class="card-body">
             <h6 class="card-title">${data.Title || titulo} (${data.Year || ''})</h6>
           </div>
-       <li class="col-12 mb-3 text-center">
+        </div>
+      </li>
+      <li class="col-12 mb-3 text-center">
         <button id="volverPremios" class="btn btn-secondary btn-sm">Ver todas las películas premiadas</button>
       </li>
-       </div>
-        
-      </li>
     `;
-
-    // Listener para volver a mostrar todas las cards de premios
     document.getElementById('volverPremios').onclick = function() {
+      setPaginaActual(1);
       mostrarPremios();
     };
   };
@@ -434,7 +442,6 @@ export function mostrarNoticias() {
 // Tendencias
 export function mostrarTendencias() {
 
-  setPaginaActual(1); // Resetear a página 1
   setSeccionActual(mostrarTendencias);
   actorSearchForm.classList.add('d-none');
   searchForm.classList.add('d-none'); // <-- Oculta el input de búsqueda
@@ -453,7 +460,7 @@ export function mostrarTendencias() {
         return;
       }
       
-      setTotalPaginas(Math.min(data.total_pages, 500));
+      setTotalPaginas(Math.min(data.total_pages, 5));
       ultimaListaPeliculas = data.results;
       data.results.slice(0, 12).forEach(movie => {
         const card = createMovieCard(movie);
@@ -649,12 +656,14 @@ if (menuDropdownMenu) {
         mostrarDirectores();
         break;
       case 'Premios':
+        setPaginaActual(1);
         mostrarPremios();
         break;
       case 'Noticias':
         mostrarNoticias();
         break;
       case 'Tendencias':
+        setPaginaActual(1);
         mostrarTendencias();
         break;
       case 'Ranking':
