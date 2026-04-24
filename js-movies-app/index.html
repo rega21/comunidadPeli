@@ -18,45 +18,51 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 py-3">
       <div class="container">
         <a class="navbar-brand bi bi-film" href="#">Cine Comunidad </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarOffcanvas" aria-controls="navbarOffcanvas">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item mx-3"><a class="nav-link active" href="#">Inicio</a></li>
-            <li class="nav-item dropdown mx-3">
-              <a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Géneros
-              </a>
-              <ul class="dropdown-menu" id="genreDropdownMenu" aria-labelledby="genreDropdown">
-                <!-- Los géneros se cargarán dinámicamente -->
-              </ul>
-            </li>
-            <li class="nav-item mx-3">
-              <a class="nav-link" id="favoritosMenuItem" href="#">Favoritos</a>
-            </li>
-            <li class="nav-item dropdown mx-3">
-              <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Menú
-              </a>
-              <ul class="dropdown-menu" id="menuDropdownMenu" aria-labelledby="menuDropdown">
-                <li><a class="dropdown-item" href="#">Actores</a></li>
-                <li><a class="dropdown-item" href="#" data-section="Directores">Directores</a></li>
-                <li><a class="dropdown-item" href="#">Premios</a></li>
-                <li><a class="dropdown-item" href="#">Noticias</a></li>
-                <li><a class="dropdown-item" href="#">Tendencias</a></li>
-                <li><a class="dropdown-item" href="#">Más valoradas</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                  <a class="dropdown-item" id="loginMenuItem" href="js/registro/login.html">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
-                  </a>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          <span class="status-dot online"></span>
-          <span id="estadoUsuario" class="small ms-3 d-none" aria-live="polite"></span>
+        <div class="offcanvas offcanvas-lg offcanvas-end navbar-dark bg-dark" tabindex="-1" id="navbarOffcanvas" aria-labelledby="navbarOffcanvasLabel">
+          <div class="offcanvas-header d-lg-none">
+            <h5 class="offcanvas-title text-white" id="navbarOffcanvasLabel">Cine Comunidad</h5>
+<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+          </div>
+          <div class="offcanvas-body d-lg-flex align-items-center">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item mx-3"><a class="nav-link active" href="#">Inicio</a></li>
+              <li class="nav-item dropdown mx-3">
+                <a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Géneros
+                </a>
+                <ul class="dropdown-menu" id="genreDropdownMenu" aria-labelledby="genreDropdown">
+                  <!-- Los géneros se cargarán dinámicamente -->
+                </ul>
+              </li>
+              <li class="nav-item mx-3">
+                <a class="nav-link" id="favoritosMenuItem" href="#">Favoritos</a>
+              </li>
+              <li class="nav-item dropdown mx-3">
+                <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Menú
+                </a>
+                <ul class="dropdown-menu" id="menuDropdownMenu" aria-labelledby="menuDropdown">
+                  <li><a class="dropdown-item" href="#">Actores</a></li>
+                  <li><a class="dropdown-item" href="#" data-section="Directores">Directores</a></li>
+                  <li><a class="dropdown-item" href="#">Premios</a></li>
+                  <li><a class="dropdown-item" href="#">Noticias</a></li>
+                  <li><a class="dropdown-item" href="#">Tendencias</a></li>
+                  <li><a class="dropdown-item" href="#">Ranking</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" id="loginMenuItem" href="js/registro/login.html">
+                      <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <span class="status-dot online ms-3"></span>
+            <span id="estadoUsuario" class="small ms-2 d-none" aria-live="polite"></span>
+          </div>
         </div>
       </div>
     </nav>    
@@ -90,6 +96,7 @@
         </div>
       </form>
       <p id="exploreResultMsg" class="mb-3 fs-5 fw-semibold text-secondary"></p>
+      <div id="seccionFiltros" class="mb-3"></div>
       <ul id="movies" class="row">
         <li class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
           <!-- contenido de la card -->
@@ -138,6 +145,21 @@
           </div>
           <div class="modal-body">
             <!-- Aquí se cargará el contenido dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para premios -->
+    <div class="modal fade" id="premioModal" tabindex="-1" aria-labelledby="premioModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="premioModalLabel">Detalles de Premios</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Aquí se cargan los detalles -->
           </div>
         </div>
       </div>

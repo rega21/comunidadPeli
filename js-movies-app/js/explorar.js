@@ -52,7 +52,7 @@ export function mostrarActores() {
       });
       
       // Ajustar total de páginas basado en contenido real
-      setTotalPaginas(Math.min(data.total_pages, 10));
+      setTotalPaginas(Math.min(data.total_pages, 500));
       renderPaginacion();
     })
     .catch(() => {
@@ -453,7 +453,7 @@ export function mostrarTendencias() {
         return;
       }
       
-      setTotalPaginas(Math.min(data.total_pages, 10));
+      setTotalPaginas(Math.min(data.total_pages, 500));
       ultimaListaPeliculas = data.results;
       data.results.slice(0, 12).forEach(movie => {
         const card = createMovieCard(movie);
@@ -469,39 +469,52 @@ export function mostrarTendencias() {
 }
 
 // Más valoradas
-export function mostrarMasValoradas() {
+export function mostrarMasValoradas(sortBy = 'rating') {
   pagination.style.display = 'block';
 
-
-  setPaginaActual(1); // Resetear a página 1
-  setSeccionActual(mostrarMasValoradas);
+  setSeccionActual(() => mostrarMasValoradas(sortBy));
   actorSearchForm.classList.add('d-none');
   searchForm.classList.remove('d-none');
-  exploreResultMsg.textContent = 'Top rating';
+  exploreResultMsg.textContent = 'Ranking';
+
+  const filtrosContainer = document.getElementById('seccionFiltros');
+  if (filtrosContainer) {
+    filtrosContainer.innerHTML = `
+      <div class="btn-group btn-group-sm">
+        <button class="btn ${sortBy === 'rating' ? 'btn-primary' : 'btn-outline-secondary'}" id="filtroRating">
+          ⭐ Mejor puntuación
+        </button>
+        <button class="btn ${sortBy === 'votes' ? 'btn-primary' : 'btn-outline-secondary'}" id="filtroVotos">
+          👥 Más votadas
+        </button>
+      </div>
+    `;
+    filtrosContainer.querySelector('#filtroRating').addEventListener('click', () => { setPaginaActual(1); mostrarMasValoradas('rating'); });
+    filtrosContainer.querySelector('#filtroVotos').addEventListener('click', () => { setPaginaActual(1); mostrarMasValoradas('votes'); });
+  }
+
   moviesList.innerHTML = '<li class="col-12">Cargando películas mejor valoradas...</li>';
-  
-  fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=es-ES&page=${paginaActual}`)
+
+  const url = sortBy === 'votes'
+    ? `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es-ES&sort_by=vote_count.desc&page=${paginaActual}`
+    : `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=es-ES&page=${paginaActual}`;
+
+  fetch(url)
     .then(res => res.json())
-    .then (data => {
+    .then(data => {
       moviesList.innerHTML = '';
-      
-      // Verificar si hay resultados
       if (!data.results || data.results.length === 0) {
         moviesList.innerHTML = '<li class="col-12">No hay más películas valoradas disponibles.</li>';
         setTotalPaginas(1);
         renderPaginacion();
         return;
       }
-      
-      setTotalPaginas(Math.min(data.total_pages, 10));
+      setTotalPaginas(Math.min(data.total_pages, 500));
       ultimaListaPeliculas = data.results;
-      data.results
-        .sort((a, b) => b.vote_average - a.vote_average) // Ordena de mayor a menor
-        .slice(0, 12)
-        .forEach(movie => {
-          const card = createMovieCard(movie, true);
-          moviesList.appendChild(card);
-        });
+      data.results.slice(0, 12).forEach(movie => {
+        const card = createMovieCard(movie, sortBy === 'votes');
+        moviesList.appendChild(card);
+      });
       renderPaginacion();
     })
     .catch(() => {
@@ -535,7 +548,7 @@ function mostrarPeliculasPorGenero(genreId) {
       }
       
       ultimaListaPeliculas = data.results;
-      setTotalPaginas(Math.min(data.total_pages, 10));
+      setTotalPaginas(Math.min(data.total_pages, 500));
       data.results.slice(0, 12).forEach(movie => {
         const card = createMovieCard(movie);
         moviesList.appendChild(card);
@@ -605,8 +618,10 @@ if (menuDropdownMenu) {
       inicioCarouselContainer.style.display = 'none';
     }
 
-    // Limpia SIEMPRE el mensaje antes de cambiar de sección
+    // Limpia SIEMPRE el mensaje y filtros antes de cambiar de sección
     exploreResultMsg.textContent = '';
+    const filtrosContainer = document.getElementById('seccionFiltros');
+    if (filtrosContainer) filtrosContainer.innerHTML = '';
 
     // Si el item tiene data-genre-id, es un género
     const genreId = item.getAttribute('data-genre-id');
@@ -642,7 +657,8 @@ if (menuDropdownMenu) {
       case 'Tendencias':
         mostrarTendencias();
         break;
-      case 'Más valoradas':
+      case 'Ranking':
+        setPaginaActual(1);
         mostrarMasValoradas();
         break;
       // Otros casos...

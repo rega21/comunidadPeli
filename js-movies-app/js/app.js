@@ -59,12 +59,11 @@ function fetchPopularMovies() {
 
 // Función para cargar películas de inicio con paginación real
 function fetchInicioMovies() {
-  const randomYear = Math.floor(Math.random() * (2024 - 1980 + 1)) + 1980; // Entre 1980 y 2024
-  fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&primary_release_year=${randomYear}&page=${paginaActual}`)
+  fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=es-ES&page=${paginaActual}`)
     .then(response => response.json())
-    .then (data => {
+    .then(data => {
       renderMovies(data.results);
-      setTotalPaginas(Math.min(data.total_pages, 10)); // Limita a 10 páginas si quieres
+      setTotalPaginas(Math.min(data.total_pages, 500));
       renderPaginacion();
     })
     .catch(() => {
@@ -73,6 +72,7 @@ function fetchInicioMovies() {
 }
 
 // Inicializar con películas variadas
+setSeccionActual(fetchInicioMovies);
 fetchInicioMovies();
 
 // --- SETUP AUTOCOMPLETE ---
@@ -156,6 +156,7 @@ setupNavbar(
       : '';
     // Reiniciar a la primera página
     setPaginaActual(1);
+    setSeccionActual(fetchMoviesByGenre);
     // Ocultar el carousel al seleccionar un género
     const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
     if (inicioCarouselContainer) {
@@ -338,7 +339,7 @@ function fetchMoviesByGenre() {
     .then(response => response.json())
     .then(data => {
       renderMovies(data.results);
-      setTotalPaginas(Math.min(data.total_pages, 10));
+      setTotalPaginas(Math.min(data.total_pages, 500));
       renderPaginacion();
       exploreResultMsg.textContent = '' // Borra el mensaje siempre al mostrar un género
     })

@@ -36,19 +36,20 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
     const item = e.target.closest('.dropdown-item');
     if (item) {
       e.preventDefault();
-      // Quitar la clase activa de todos
       document.querySelectorAll('#genreDropdownMenu .dropdown-item').forEach(el => el.classList.remove('active-genre'));
-      // Agregar la clase activa al seleccionado
       item.classList.add('active-genre');
       const genreId = item.getAttribute('data-genre-id');
       if (onGenreSelect) onGenreSelect(genreId);
+
+      // Cerrar offcanvas si está abierto
+      const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('navbarOffcanvas'));
+      if (offcanvas) offcanvas.hide();
     }
   });
 
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   const loginMenuItem = document.getElementById('loginMenuItem');
   const estadoUsuario = document.getElementById('estadoUsuario');
-
   if (usuario) {
     if (estadoUsuario) {
       estadoUsuario.textContent = `Online: ${usuario.name || usuario.mail}`;
@@ -69,7 +70,7 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
       estadoUsuario.classList.add('d-none');
     }
     if (loginMenuItem) {
-      loginMenuItem.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Login';
+      loginMenuItem.innerHTML = '<i class="bi bi-person-circle"></i> Login';
       loginMenuItem.href = "js/registro/login.html";
     }
   }
