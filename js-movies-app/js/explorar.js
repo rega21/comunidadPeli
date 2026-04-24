@@ -64,87 +64,57 @@ export function mostrarActores() {
 
 // Mostrar directores populares
 export function mostrarDirectores() {
-  pagination.style.display = 'block'; // mostrar la paginación
-
-
   setSeccionActual(mostrarDirectores);
   actorSearchForm.classList.add('d-none');
   searchForm.classList.add('d-none');
   exploreResultMsg.textContent = 'Directores populares';
   moviesList.innerHTML = '<li class="col-12">Cargando directores...</li>';
-  
-  const currentPage = paginaActual;
-  const moviePage = Math.ceil(currentPage / 2);
-  
-  fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${moviePage}`)
-    .then(response => response.json())
-    .then(data => {
-      // Si no hay más películas, no habrá más directores
-      if (!data.results || data.results.length === 0) {
-        moviesList.innerHTML = '<li class="col-12">No hay más directores disponibles.</li>';
-        setTotalPaginas(Math.max(currentPage - 1, 1)); // Página anterior como máximo
-        renderPaginacion();
-        return;
-      }
-      
-      const moviePromises = data.results.slice(0, 15).map(movie => 
-        fetch(`${BASE_URL}/movie/${movie.id}/credits?api_key=${API_KEY}`)
+
+  // Cada página de directores usa 2 páginas de películas populares (~40 películas)
+  const moviePageA = (paginaActual - 1) * 2 + 1;
+  const moviePageB = moviePageA + 1;
+
+  Promise.all([moviePageA, moviePageB].map(p =>
+    fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&page=${p}`)
+      .then(res => res.json())
+      .then(data => data.results || [])
+      .catch(() => [])
+  ))
+  .then(pages => {
+    const movies = pages.flat();
+    return Promise.all(
+      movies.map(m =>
+        fetch(`${BASE_URL}/movie/${m.id}/credits?api_key=${API_KEY}`)
           .then(res => res.json())
-          .then(credits => credits.crew.filter(person => person.job === 'Director'))
+          .then(credits => credits.crew.filter(p => p.job === 'Director'))
           .catch(() => [])
-      );
-      
-      return Promise.all(moviePromises);
-    })
-    .then(directorsArrays => {
-      if (!directorsArrays) return; // Si no hay datos, salir
-      
-      const allDirectors = directorsArrays.flat();
-      const uniqueDirectors = allDirectors.filter((director, index, self) => 
-        index === self.findIndex(d => d.id === director.id)
-      );
-      
-      moviesList.innerHTML = '';
-      
-      if (uniqueDirectors.length === 0) {
-        moviesList.innerHTML = '<li class="col-12">No hay más directores disponibles.</li>';
-        setTotalPaginas(Math.max(currentPage - 1, 1)); // Página anterior como máximo
-        renderPaginacion();
-        return;
-      }
-      
-      ultimaListaActores = uniqueDirectors;
-      
-      // Paginación manual
-      const itemsPerPage = 12;
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const directorsToShow = uniqueDirectors.slice(startIndex, endIndex);
-      
-      // Si no hay directores para mostrar en esta página
-      if (directorsToShow.length === 0) {
-        moviesList.innerHTML = '<li class="col-12">No hay más directores disponibles.</li>';
-        setTotalPaginas(Math.max(currentPage - 1, 1)); // Página anterior como máximo
-        renderPaginacion();
-        return;
-      }
-      
-      directorsToShow.forEach(director => {
-        const card = createDirectorCard(director);
-        moviesList.appendChild(card);
-      });
-      
-      // Calcular páginas reales basadas en contenido disponible
-      const totalPages = Math.ceil(uniqueDirectors.length / itemsPerPage);
-      setTotalPaginas(Math.min(totalPages, currentPage + 2)); // Máximo 2 páginas adelante
-      renderPaginacion();
-    })
-    .catch(error => {
-      console.error('Error al cargar directores:', error);
-      moviesList.innerHTML = '<li class="col-12">Error al cargar directores.</li>';
-      setTotalPaginas(1);
-      renderPaginacion();
+      )
+    );
+  })
+  .then(directorsPerMovie => {
+    const seen = new Set();
+    const directors = directorsPerMovie.flat().filter(d => {
+      if (seen.has(d.id)) return false;
+      seen.add(d.id);
+      return true;
     });
+
+    moviesList.innerHTML = '';
+    if (directors.length === 0) {
+      moviesList.innerHTML = '<li class="col-12">No hay directores disponibles.</li>';
+      setTotalPaginas(Math.max(paginaActual - 1, 1));
+      renderPaginacion();
+      return;
+    }
+    ultimaListaActores = directors;
+    directors.forEach(d => moviesList.appendChild(createDirectorCard(d)));
+    // popular tiene ~250 páginas reales; cada director-página consume 2 → ~125 páginas
+    setTotalPaginas(Math.min(125, paginaActual + 10));
+    renderPaginacion();
+  })
+  .catch(() => {
+    moviesList.innerHTML = '<li class="col-12">Error al cargar directores.</li>';
+  });
 }
 
 // Buscar actores por nombre
@@ -604,6 +574,44 @@ moviesList.addEventListener('click', function(e) {
   }
 });
 
+function navegarSeccionMenu(seccion) {
+  const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
+  if (inicioCarouselContainer) inicioCarouselContainer.style.display = 'none';
+  exploreResultMsg.textContent = '';
+  const filtrosContainer = document.getElementById('seccionFiltros');
+  if (filtrosContainer) filtrosContainer.innerHTML = '';
+
+  switch (seccion) {
+    case 'Actores':      setPaginaActual(1); mostrarActores(); break;
+    case 'Directores':   setPaginaActual(1); mostrarDirectores(); break;
+    case 'Premios':      setPaginaActual(1); mostrarPremios(); break;
+    case 'Noticias':     mostrarNoticias(); break;
+    case 'Tendencias':   setPaginaActual(1); mostrarTendencias(); break;
+    case 'Ranking':      setPaginaActual(1); mostrarMasValoradas(); break;
+  }
+}
+
+// Tendencias dentro del dropdown de Géneros
+document.getElementById('genreDropdownMenu').addEventListener('click', (e) => {
+  const item = e.target.closest('[data-section]');
+  if (!item) return;
+  e.preventDefault();
+  navegarSeccionMenu(item.getAttribute('data-section'));
+  const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('navbarOffcanvas'));
+  if (offcanvas) offcanvas.hide();
+});
+
+// Mobile: ítems planos en el offcanvas
+document.querySelectorAll('.mobile-menu-item').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const seccion = link.textContent.trim();
+    navegarSeccionMenu(seccion);
+    const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('navbarOffcanvas'));
+    if (offcanvas) offcanvas.hide();
+  });
+});
+
 const menuDropdownMenu = document.getElementById('menuDropdownMenu');
 if (menuDropdownMenu) {
   menuDropdownMenu.addEventListener('click', (e) => {
@@ -638,40 +646,7 @@ if (menuDropdownMenu) {
       return;
     }
 
-    switch (item.textContent.trim()) {
-      case 'Inicio':
-        moviesList.innerHTML = '';
-        exploreResultMsg.textContent = 'Bienvenido a Movies App';
-        const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
-        if (inicioCarouselContainer) {
-          inicioCarouselContainer.style.display = '';
-        }
-        break;
-      case 'Actores':
-        setPaginaActual(1);
-        mostrarActores();
-        break;
-      case 'Directores':
-        setPaginaActual(1);
-        mostrarDirectores();
-        break;
-      case 'Premios':
-        setPaginaActual(1);
-        mostrarPremios();
-        break;
-      case 'Noticias':
-        mostrarNoticias();
-        break;
-      case 'Tendencias':
-        setPaginaActual(1);
-        mostrarTendencias();
-        break;
-      case 'Ranking':
-        setPaginaActual(1);
-        mostrarMasValoradas();
-        break;
-      // Otros casos...
-    }
+    navegarSeccionMenu(item.textContent.trim());
   });
 }
 

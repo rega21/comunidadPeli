@@ -51,7 +51,10 @@ js-movies-app/
 
 ### Géneros
 - Listado dinámico desde TMDB
-- Filtrado con paginación completa
+- Filtros por ordenamiento: Popularidad, Mejor puntuación, Más votadas, Más recientes
+- Filtro por año (1970 – actualidad)
+- Género activo con indicador ✓ y etiqueta sticky visible al scrollear
+- Al final del dropdown: acceso rápido a Tendencias y Ranking
 
 ### Favoritos
 - Requiere sesión iniciada
@@ -61,11 +64,10 @@ js-movies-app/
 | Sección | Descripción |
 |---|---|
 | Actores | Actores populares con buscador |
-| Directores | Directores populares |
-| Premios | Películas ganadoras de premios (OMDB) |
+| Directores | Directores populares (extraídos de créditos de películas) |
 | Noticias | Noticias cinematográficas |
-| Tendencias | Películas trending de la semana |
-| Ranking | Top por puntuación o por votos |
+| Tendencias | Películas trending de la semana (en dropdown Géneros) |
+| Ranking | Top por puntuación o por votos (en dropdown Géneros) |
 
 ### Ranking
 Dos modos de ordenamiento:
@@ -93,6 +95,15 @@ export const MOCKAPI_URL = 'TU_MOCKAPI_URL';
 ---
 
 ## Changelog
+
+### 2026-04-24 (v2)
+- Filtros por ordenamiento y año dentro de cada género
+- Género seleccionado muestra ✓ en el dropdown y etiqueta sticky al scrollear
+- "Más recientes" oculta el rating (películas nuevas sin votos)
+- Mobile: offcanvas con ítems planos sin dropdown "Menú" anidado
+- Tendencias y Ranking movidos al dropdown de Géneros
+- Directores reescritos: se extraen de créditos de películas populares
+- Fix: género activo se borraba al abrir el dropdown de géneros
 
 ### 2026-04-24
 - Menú hamburguesa convertido a offcanvas lateral (panel pequeño desde la derecha)

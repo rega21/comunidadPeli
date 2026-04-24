@@ -4,7 +4,7 @@
  * @param {boolean} mostrarVotos - Indica si se deben mostrar los votos.
  * @returns {HTMLElement} - Elemento <li> con la tarjeta.
  */
-export function createMovieCard(movie, mostrarVotos = false) {
+export function createMovieCard(movie, mostrarVotos = false, mostrarRating = true) {
   const li = document.createElement('li');
   li.className = 'col-6 col-sm-4 col-md-3 col-lg-2 mb-3'; // <-- Aquí va la clase
 
@@ -22,12 +22,12 @@ export function createMovieCard(movie, mostrarVotos = false) {
       <div class="card-body">
         
         <p class="card-text mb-2">
-          ${
-            mostrarVotos
+          ${mostrarRating
+            ? mostrarVotos
               ? `<span class="text-primary"><i class="bi bi-people-fill"></i> ${movie.vote_count} votos</span>`
               : `<span class="text-warning">&#9733;</span> <span>${movie.vote_average}</span>`
-          }
-           <h5 class="card-title mb-1">${movie.title}</h5>
+            : ''}
+          <h5 class="card-title mb-1">${movie.title}</h5>
         </p>
       </div>
     </div>

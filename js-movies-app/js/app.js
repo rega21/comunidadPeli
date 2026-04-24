@@ -10,10 +10,12 @@ const searchInput = document.getElementById('searchInput');
 const actorSearchInput = document.getElementById('actorSearchInput');
 
 let generoActual = null;
-let seccionActual = 'Inicio'; // Al cargar la página
+let seccionActual = 'Inicio';
+let sortByActual = 'popularity.desc';
+let anioActual = '';
 
 // Función para mostrar películas
-function renderMovies(movies) {
+function renderMovies(movies, { mostrarVotos = false, mostrarRating = true } = {}) {
   window.ultimaListaPeliculas = movies;
   moviesList.innerHTML = '';
   if (!movies || movies.length === 0) {
@@ -21,7 +23,7 @@ function renderMovies(movies) {
     return;
   }
   movies.forEach(movie => {
-    const card = createMovieCard(movie);
+    const card = createMovieCard(movie, mostrarVotos, mostrarRating);
     moviesList.appendChild(card);
   });
 
@@ -93,10 +95,12 @@ setupAutocomplete(
 // --- SETUP NAVBAR Y CONTROL DE CAROUSEL ---
 setupNavbar(
   (section) => {
-    // Quitar selección de género al cambiar de sección
-    document.querySelectorAll('#genreDropdownMenu .dropdown-item').forEach(el => el.classList.remove('active-genre'));
-    if (section !== 'Género') {
+    if (section !== 'Géneros') {
+      document.querySelectorAll('#genreDropdownMenu .dropdown-item').forEach(el => el.classList.remove('active-genre'));
       document.getElementById('genreResultMsg').textContent = '';
+      document.getElementById('seccionFiltros').innerHTML = '';
+      sortByActual = 'popularity.desc';
+      anioActual = '';
     }
     const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
     switch (section) {
@@ -146,18 +150,17 @@ setupNavbar(
   },
   (genreId) => {
     generoActual = genreId;
-    // Buscar el nombre del género seleccionado
+    sortByActual = 'popularity.desc';
+    anioActual = '';
     const genreDropdownMenu = document.getElementById('genreDropdownMenu');
     const selected = genreDropdownMenu.querySelector(`[data-genre-id="${genreId}"]`);
     const genreName = selected ? selected.textContent.trim() : '';
-    // Mostrar mensaje dinámico
     document.getElementById('genreResultMsg').textContent = genreName
-      ? `Resultados para el género: ${genreName}`
+      ? `Género: ${genreName}`
       : '';
-    // Reiniciar a la primera página
     setPaginaActual(1);
     setSeccionActual(fetchMoviesByGenre);
-    // Ocultar el carousel al seleccionar un género
+    renderFiltrosGenero();
     const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
     if (inicioCarouselContainer) {
       inicioCarouselContainer.style.display = 'none';
@@ -333,15 +336,61 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function renderFiltrosGenero() {
+  const filtros = document.getElementById('seccionFiltros');
+  if (!filtros) return;
+  const anioMax = new Date().getFullYear();
+  let yearOptions = '<option value="">Todos los años</option>';
+  for (let y = anioMax; y >= 1970; y--) {
+    yearOptions += `<option value="${y}" ${anioActual == y ? 'selected' : ''}>${y}</option>`;
+  }
+  const sorts = [
+    { value: 'popularity.desc', label: 'Popularidad' },
+    { value: 'vote_average.desc', label: 'Mejor puntuación' },
+    { value: 'vote_count.desc', label: 'Más votadas' },
+    { value: 'release_date.desc', label: 'Más recientes' },
+  ];
+  filtros.innerHTML = `
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="btn-group" role="group">
+        ${sorts.map(s => `
+          <button class="btn btn-sm ${sortByActual === s.value ? 'btn-primary' : 'btn-outline-secondary'} genre-sort-btn" data-sort="${s.value}">
+            ${s.label}
+          </button>`).join('')}
+      </div>
+      <select id="anioFiltro" class="form-select form-select-sm w-auto bg-dark text-light border-secondary">
+        ${yearOptions}
+      </select>
+    </div>
+  `;
+  filtros.querySelectorAll('.genre-sort-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+      sortByActual = this.getAttribute('data-sort');
+      setPaginaActual(1);
+      renderFiltrosGenero();
+      fetchMoviesByGenre();
+    });
+  });
+  document.getElementById('anioFiltro').addEventListener('change', function () {
+    anioActual = this.value;
+    setPaginaActual(1);
+    fetchMoviesByGenre();
+  });
+}
+
 function fetchMoviesByGenre() {
   if (!generoActual) return;
-  fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${generoActual}&language=es-ES&page=${paginaActual}`)
+  const hoy = new Date().toISOString().split('T')[0];
+  let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${generoActual}&language=es-ES&page=${paginaActual}&sort_by=${sortByActual}&release_date.lte=${hoy}`;
+  if (anioActual) url += `&primary_release_year=${anioActual}`;
+  if (sortByActual === 'vote_average.desc') url += `&vote_count.gte=200`;
+  fetch(url)
     .then(response => response.json())
     .then(data => {
-      renderMovies(data.results);
+      renderMovies(data.results, { mostrarRating: sortByActual !== 'release_date.desc' });
       setTotalPaginas(Math.min(data.total_pages, 500));
       renderPaginacion();
-      exploreResultMsg.textContent = '' // Borra el mensaje siempre al mostrar un género
+      exploreResultMsg.textContent = '';
     })
     .catch(() => {
       moviesList.innerHTML = '<li class="col-12">Error al cargar películas por género.</li>';

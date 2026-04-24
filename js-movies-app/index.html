@@ -40,17 +40,15 @@
               <li class="nav-item mx-3">
                 <a class="nav-link" id="favoritosMenuItem" href="#">Favoritos</a>
               </li>
-              <li class="nav-item dropdown mx-3">
+              <!-- Desktop: Menú agrupado -->
+              <li class="nav-item dropdown mx-3 d-none d-lg-block">
                 <a class="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   Menú
                 </a>
                 <ul class="dropdown-menu" id="menuDropdownMenu" aria-labelledby="menuDropdown">
                   <li><a class="dropdown-item" href="#">Actores</a></li>
-                  <li><a class="dropdown-item" href="#" data-section="Directores">Directores</a></li>
-                  <li><a class="dropdown-item" href="#">Premios</a></li>
+                  <li><a class="dropdown-item" href="#">Directores</a></li>
                   <li><a class="dropdown-item" href="#">Noticias</a></li>
-                  <li><a class="dropdown-item" href="#">Tendencias</a></li>
-                  <li><a class="dropdown-item" href="#">Ranking</a></li>
                   <li><hr class="dropdown-divider"></li>
                   <li>
                     <a class="dropdown-item" id="loginMenuItem" href="js/registro/login.html">
@@ -58,6 +56,17 @@
                     </a>
                   </li>
                 </ul>
+              </li>
+              <!-- Mobile: ítems planos -->
+              <li class="d-lg-none"><hr class="dropdown-divider border-secondary my-1"></li>
+              <li class="nav-item mx-3 d-lg-none"><a class="nav-link mobile-menu-item" href="#">Actores</a></li>
+              <li class="nav-item mx-3 d-lg-none"><a class="nav-link mobile-menu-item" href="#">Directores</a></li>
+              <li class="nav-item mx-3 d-lg-none"><a class="nav-link mobile-menu-item" href="#">Noticias</a></li>
+              <li class="d-lg-none"><hr class="dropdown-divider border-secondary my-1"></li>
+              <li class="nav-item mx-3 d-lg-none">
+                <a class="nav-link" id="loginMenuItemMobile" href="js/registro/login.html">
+                  <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
               </li>
             </ul>
             <span class="status-dot online ms-3"></span>

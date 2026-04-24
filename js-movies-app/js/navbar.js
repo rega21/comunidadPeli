@@ -22,13 +22,18 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
       genreDropdownMenu.innerHTML = '';
       data.genres.forEach(genre => {
         const li = document.createElement('li');
-        li.innerHTML = `
-          <a class="dropdown-item" href="#" data-genre-id="${genre.id}">
-            ${genre.name}
-          </a>
-        `;
+        li.innerHTML = `<a class="dropdown-item" href="#" data-genre-id="${genre.id}">${genre.name}</a>`;
         genreDropdownMenu.appendChild(li);
       });
+      const divider = document.createElement('li');
+      divider.innerHTML = '<hr class="dropdown-divider">';
+      genreDropdownMenu.appendChild(divider);
+      const tendenciasLi = document.createElement('li');
+      tendenciasLi.innerHTML = '<a class="dropdown-item" href="#" data-section="Tendencias">Tendencias</a>';
+      genreDropdownMenu.appendChild(tendenciasLi);
+      const rankingLi = document.createElement('li');
+      rankingLi.innerHTML = '<a class="dropdown-item" href="#" data-section="Ranking">Ranking</a>';
+      genreDropdownMenu.appendChild(rankingLi);
     });
 
   // Manejar clic en género
@@ -39,6 +44,7 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
       document.querySelectorAll('#genreDropdownMenu .dropdown-item').forEach(el => el.classList.remove('active-genre'));
       item.classList.add('active-genre');
       const genreId = item.getAttribute('data-genre-id');
+      if (!genreId) return; // data-section items los maneja explorar.js
       if (onGenreSelect) onGenreSelect(genreId);
 
       // Cerrar offcanvas si está abierto
@@ -48,31 +54,31 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
   });
 
   const usuario = JSON.parse(localStorage.getItem('usuario'));
-  const loginMenuItem = document.getElementById('loginMenuItem');
+  const loginItems = document.querySelectorAll('#loginMenuItem, #loginMenuItemMobile');
   const estadoUsuario = document.getElementById('estadoUsuario');
   if (usuario) {
     if (estadoUsuario) {
       estadoUsuario.textContent = `Online: ${usuario.name || usuario.mail}`;
       estadoUsuario.classList.remove('d-none');
     }
-    if (loginMenuItem) {
-      loginMenuItem.innerHTML = '<i class="bi bi-box-arrow-right"></i> Cerrar sesión';
-      loginMenuItem.href = "#";
-      loginMenuItem.addEventListener('click', (e) => {
+    loginItems.forEach(item => {
+      item.innerHTML = '<i class="bi bi-box-arrow-right"></i> Cerrar sesión';
+      item.href = '#';
+      item.addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('usuario');
         window.location.reload();
       });
-    }
+    });
   } else {
     if (estadoUsuario) {
       estadoUsuario.textContent = '';
       estadoUsuario.classList.add('d-none');
     }
-    if (loginMenuItem) {
-      loginMenuItem.innerHTML = '<i class="bi bi-person-circle"></i> Login';
-      loginMenuItem.href = "js/registro/login.html";
-    }
+    loginItems.forEach(item => {
+      item.innerHTML = '<i class="bi bi-person-circle"></i> Login';
+      item.href = 'js/registro/login.html';
+    });
   }
 
 }
