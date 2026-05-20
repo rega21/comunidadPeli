@@ -185,13 +185,12 @@ async function showMovieModal(movie) {
     .then(data => {
       const cast = Array.isArray(data.cast) ? data.cast.slice(0, 5).map(actor => actor.name).join(', ') : 'No disponible';
       const directors = Array.isArray(data.crew) ? data.crew.filter(person => person.job === 'Director').map(d => d.name).join(', ') : 'No disponible';
-      const infoExtra = `
-        <p><strong>Director:</strong> ${directors}</p>
-        <p><strong>Actores principales:</strong> ${cast}</p>
-      `;
-      const trailerContainer = document.getElementById('trailer-container');
-      if (trailerContainer) {
-        trailerContainer.insertAdjacentHTML('beforebegin', infoExtra);
+      const infoExtra = document.getElementById('info-extra');
+      if (infoExtra) {
+        infoExtra.innerHTML = `
+          <p><strong>Director:</strong> ${directors}</p>
+          <p><strong>Actores principales:</strong> ${cast}</p>
+        `;
       }
     });
 
@@ -199,16 +198,26 @@ async function showMovieModal(movie) {
   const trailerKey = await getYouTubeTrailerKeyEn(movie.id, API_KEY, BASE_URL);
   if (trailerKey) {
     document.getElementById('trailer-container').innerHTML = `
-      <a href="https://www.youtube.com/watch?v=${trailerKey}" target="_blank" rel="noopener" class="btn btn-danger mt-3">
-        Ver tráiler en YouTube
-      </a>
+      <div class="ratio ratio-16x9 mt-3">
+        <iframe src="https://www.youtube.com/embed/${trailerKey}"
+          allowfullscreen
+          allow="autoplay; encrypted-media"
+          style="border:none; border-radius:8px;">
+        </iframe>
+      </div>
     `;
   } else {
-    document.getElementById('trailer-container').innerHTML = `<p class="text-muted">No hay tráiler disponible.</p>`;
+    document.getElementById('trailer-container').innerHTML = `<p class="text-muted mt-3">No hay tráiler disponible.</p>`;
   }
 
-  // Mostrar el modal (Bootstrap 5)
-  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('movieModal'));
+  // Detener video al cerrar el modal
+  const modalEl = document.getElementById('movieModal');
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    const iframe = modalEl.querySelector('iframe');
+    if (iframe) iframe.src = iframe.src;
+  }, { once: true });
+
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
   modal.show();
 }
 
