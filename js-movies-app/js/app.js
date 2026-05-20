@@ -314,6 +314,21 @@ async function mostrarFavoritos() {
 }
 
 // Carousel de imágenes (estrenos) y trailers/teasers SOLO una vez al cargar la página
+// Manejar sesión de Google OAuth al volver del callback
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    const user = session.user;
+    const userData = {
+      name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
+      mail: user.email,
+      id: user.id
+    };
+    localStorage.setItem('usuario', JSON.stringify(userData));
+  } else if (event === 'SIGNED_OUT') {
+    localStorage.removeItem('usuario');
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   const inicioCarouselContainer = document.getElementById('inicioCarouselContainer');
   if (inicioCarouselContainer) {
