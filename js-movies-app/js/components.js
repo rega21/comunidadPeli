@@ -33,15 +33,6 @@ export function createMovieCard(movie, mostrarVotos = false, mostrarRating = tru
     </div>
   `;
 
-  // Verificar si la película está en la lista de favoritos del usuario
-  const usuario = JSON.parse(localStorage.getItem('usuario'));
-  if (usuario) {
-    const favoritos = JSON.parse(localStorage.getItem(`favoritos_${usuario.mail}`)) || [];
-    if (favoritos.includes(String(movie.id))) {
-      li.querySelector('.watchlist-btn i').className = 'bi bi-bookmark-fill text-warning';
-    }
-  }
-
   return li;
 }
 

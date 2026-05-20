@@ -3,7 +3,8 @@ import { setupNavbar } from './navbar.js';
 import { setPaginaActual, renderPaginacion, paginaActual, setSeccionActual, setTotalPaginas } from './pagination.js';
 import { setupAutocomplete } from './autocomplete.js';
 import { renderImageCarousel } from './carousel.js';
-import { API_KEY, BASE_URL, MOCKAPI_URL } from './config.js';
+import { API_KEY, BASE_URL } from './config.js';
+import { supabase } from './supabase-client.js';
 const moviesList = document.getElementById('movies');
 const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
@@ -246,21 +247,18 @@ document.addEventListener('click', async function(e) {
     const movieId = watchBtn.getAttribute('data-movie-id');
     const icon = watchBtn.querySelector('i');
 
-    // Consultar si ya existe el favorito en MockAPI
-    const res = await fetch(`${MOCKAPI_URL}/favoritos?mail=${usuario.mail}&movieId=${movieId}`);
-    const favoritos = await res.json();
+    const { data: existing } = await supabase
+      .from('favoritos')
+      .select('id')
+      .eq('user_id', usuario.id)
+      .eq('movie_id', movieId)
+      .maybeSingle();
 
-    if (favoritos.length > 0 && favoritos[0].id) {
-      // Quitar de favoritos (DELETE)
-      await fetch(`${MOCKAPI_URL}/favoritos/${favoritos[0].id}`, { method: 'DELETE' });
+    if (existing) {
+      await supabase.from('favoritos').delete().eq('id', existing.id);
       icon.className = 'bi bi-bookmark';
     } else {
-      // Agregar a favoritos (POST)
-      await fetch(`${MOCKAPI_URL}/favoritos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mail: usuario.mail, movieId })
-      });
+      await supabase.from('favoritos').insert({ user_id: usuario.id, movie_id: movieId });
       icon.className = 'bi bi-bookmark-fill text-warning';
     }
     return;
@@ -291,16 +289,17 @@ async function mostrarFavoritos() {
     return;
   }
   moviesList.innerHTML = '<li class="col-12">Cargando favoritos...</li>';
-  const res = await fetch(`${MOCKAPI_URL}/favoritos?mail=${usuario.mail}`);
-  let favoritos = await res.json();
-  if (!Array.isArray(favoritos)) favoritos = [];
-  if (!favoritos.length) {
+  const { data: favoritos } = await supabase
+    .from('favoritos')
+    .select('movie_id')
+    .eq('user_id', usuario.id);
+  if (!favoritos || !favoritos.length) {
     moviesList.innerHTML = '<li class="col-12">No tienes películas en tu Watchlist.</li>';
     return;
   }
   const movies = await Promise.all(
     favoritos.map(fav =>
-      fetch(`${BASE_URL}/movie/${fav.movieId}?api_key=${API_KEY}`)
+      fetch(`${BASE_URL}/movie/${fav.movie_id}?api_key=${API_KEY}`)
         .then(r => r.ok ? r.json() : null)
         .catch(() => null)
     )
