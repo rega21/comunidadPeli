@@ -78,12 +78,13 @@ export function showMovieModal(movie, API_KEY, BASE_URL) {
     .then(data => {
       const cast = data.cast.slice(0, 5).map(actor => actor.name).join(', ');
       const directors = data.crew.filter(person => person.job === 'Director').map(d => d.name).join(', ');
-      const infoExtra = `
-        <p><strong>Director:</strong> ${directors || 'No disponible'}</p>
-        <p><strong>Actores principales:</strong> ${cast || 'No disponible'}</p>
-      `;
-      const trailerContainer = document.getElementById('trailer-container');
-      trailerContainer.insertAdjacentHTML('beforebegin', infoExtra);
+      const infoExtra = document.getElementById('info-extra');
+      if (infoExtra) {
+        infoExtra.innerHTML = `
+          <p><strong>Director:</strong> ${directors || 'No disponible'}</p>
+          <p><strong>Actores principales:</strong> ${cast || 'No disponible'}</p>
+        `;
+      }
     });
 
   // Buscar trailer en TMDB
@@ -97,17 +98,27 @@ export function showMovieModal(movie, API_KEY, BASE_URL) {
       );
       if (trailer) {
         document.getElementById('trailer-container').innerHTML = `
-          <a href="https://www.youtube.com/watch?v=${trailer.key}" target="_blank" rel="noopener" class="btn btn-danger mt-3">
-            Ver tráiler en YouTube
-          </a>
+          <div class="ratio ratio-16x9 mt-3">
+            <iframe src="https://www.youtube.com/embed/${trailer.key}"
+              allowfullscreen
+              allow="autoplay; encrypted-media"
+              style="border:none; border-radius:8px;">
+            </iframe>
+          </div>
         `;
       } else {
-        document.getElementById('trailer-container').innerHTML = `<p class="text-muted">No hay tráiler disponible.</p>`;
+        document.getElementById('trailer-container').innerHTML = `<p class="text-muted mt-3">No hay tráiler disponible.</p>`;
       }
     });
 
-  // Mostrar el modal (Bootstrap 5)
-  const modal = new bootstrap.Modal(document.getElementById('movieModal'));
+  // Detener el video al cerrar el modal
+  const modalEl = document.getElementById('movieModal');
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    const iframe = modalEl.querySelector('iframe');
+    if (iframe) iframe.src = iframe.src;
+  }, { once: true });
+
+  const modal = new bootstrap.Modal(modalEl);
   modal.show();
 }
 
