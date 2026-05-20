@@ -1,3 +1,5 @@
+import { supabase } from './supabase-client.js';
+
 export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
   // Navegación principal
   document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
@@ -64,8 +66,9 @@ export function setupNavbar(onNavigate, onGenreSelect, API_KEY, BASE_URL) {
     loginItems.forEach(item => {
       item.innerHTML = '<i class="bi bi-box-arrow-right"></i> Cerrar sesión';
       item.href = '#';
-      item.addEventListener('click', (e) => {
+      item.addEventListener('click', async (e) => {
         e.preventDefault();
+        await supabase.auth.signOut();
         localStorage.removeItem('usuario');
         window.location.reload();
       });

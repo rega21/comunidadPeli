@@ -2,3 +2,5 @@ export const API_KEY = 'fcb026d5f5daf5a3a9471f5fab2e6c69';
 export const BASE_URL = 'https://api.themoviedb.org/3';
 export const OMDB_KEY = '27f8a9cb';
 export const MOCKAPI_URL = 'https://685abb749f6ef9611157981f.mockapi.io';
+export const SUPABASE_URL = 'https://rzvrrxxzyhfbjdhylcpo.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6dnJyeHh6eWhmYmpkaHlsY3BvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzMDI5ODIsImV4cCI6MjA5NDg3ODk4Mn0.hLOtqyrBUbqP_UhSCY7FJsdLlk6pYYHpnHVBwhSgsz4';
