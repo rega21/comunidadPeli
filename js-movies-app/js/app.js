@@ -294,7 +294,8 @@ async function mostrarFavoritos() {
 
   const usuario = JSON.parse(localStorage.getItem('usuario'));
   if (!usuario) {
-    moviesList.innerHTML = '<li class="col-12">Debes iniciar sesión para ver tus favoritos.</li>';
+    window.location.href = 'js/registro/login.html';
+    return;
     return;
   }
   moviesList.innerHTML = '<li class="col-12">Cargando favoritos...</li>';
